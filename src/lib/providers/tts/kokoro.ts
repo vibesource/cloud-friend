@@ -22,9 +22,11 @@ export const KOKORO_VOICES: VoiceInfo[] = [
 ];
 
 /**
- * Kokoro TTS provider. Loads an 82M-param model in-browser via Transformers.js
- * (WebGPU preferred, falls back to WASM). First-use downloads the model
- * (~80–200MB depending on quantization) and caches it.
+ * Kokoro TTS provider. Loads an 82M-param model in-browser via Transformers.js.
+ * We intentionally default to WASM rather than auto-WebGPU: Chrome's WebGPU
+ * execution path is faster, but has shown provider-assignment/runtime issues
+ * in ONNX Runtime. WASM q8 is slower but currently the stable cross-browser path.
+ * First-use downloads the model (~80–200MB depending on quantization) and caches it.
  */
 class KokoroTTS implements TTSProvider {
   readonly id = 'kokoro';
@@ -74,11 +76,11 @@ class KokoroTTS implements TTSProvider {
     const mod = await import('kokoro-js');
     const KokoroTTSClass = mod.KokoroTTS;
 
-    // Choose device + dtype. WebGPU is much faster when available.
-    const hasWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator;
-    const device = hasWebGpu ? 'webgpu' : 'wasm';
-    // fp32 on webgpu; user-configured dtype on wasm.
-    const dtype = hasWebGpu ? 'fp32' : this.config.kokoroDtype || 'q8';
+    // Stable default: force WASM. Chrome's WebGPU/JSEP path can emit ONNX EP
+    // assignment warnings and fail playback on some machines; Firefox's WASM
+    // path is the known-good behavior we want everywhere.
+    const device = 'wasm';
+    const dtype = this.config.kokoroDtype || 'q8';
 
     onProgress?.(0.05, `Loading model (${device}/${dtype})…`);
     const tts = await KokoroTTSClass.from_pretrained(KOKORO_MODEL_ID, {

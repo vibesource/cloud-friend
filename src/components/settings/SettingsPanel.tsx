@@ -210,7 +210,7 @@ export default function SettingsPanel({ settings, onSave, onClose }: Props) {
                 </SelectField>
                 <SelectField
                   label="Kokoro quality"
-                  hint="q8 is the best default for WASM. WebGPU uses fp32 automatically."
+                  hint="q8 is the best stable default. Kokoro currently runs through WASM for cross-browser reliability."
                   value={draft.tts.kokoroDtype}
                   onChange={(e) =>
                     patch({
