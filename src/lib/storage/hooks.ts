@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, getSettings, updateSettings } from './db';
+import { db, ensureSettingsSeeded, updateSettings } from './db';
 import type { Fact, Message, Settings, SettingsInput } from '@/types/db';
 
 export function useMessages(): Message[] {
@@ -22,7 +23,13 @@ export function useFacts(): Fact[] {
 }
 
 export function useSettings(): Settings | undefined {
-  return useLiveQuery(() => getSettings(), []);
+  const settings = useLiveQuery(() => db.settings.get('singleton'), []);
+  useEffect(() => {
+    if (settings === undefined) {
+      void ensureSettingsSeeded();
+    }
+  }, [settings]);
+  return settings;
 }
 
 export async function saveSettings(input: SettingsInput): Promise<void> {

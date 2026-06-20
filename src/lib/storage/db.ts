@@ -65,15 +65,41 @@ export class CloudDB extends Dexie {
 
 export const db = new CloudDB();
 
+/**
+ * Read-only fetch of settings. Safe to call from a useLiveQuery querier.
+ * Returns undefined if settings have never been seeded.
+ */
+export async function readSettings(): Promise<Settings | undefined> {
+  return db.settings.get('singleton');
+}
+
+/**
+ * Ensure a settings row exists. Writes only on first run. Safe to call
+ * outside a live query (e.g. at app start). Returns the seeded row if
+ * a write happened, otherwise undefined.
+ */
+export async function ensureSettingsSeeded(): Promise<Settings | undefined> {
+  const existing = await db.settings.get('singleton');
+  if (existing) return undefined;
+  const seeded = { ...DEFAULT_SETTINGS, updatedAt: Date.now() };
+  await db.settings.put(seeded);
+  return seeded;
+}
+
+/**
+ * Read settings, seeding defaults if missing. NOT safe inside useLiveQuery
+ * because it may write. Use readSettings() there instead.
+ */
 export async function getSettings(): Promise<Settings> {
   const existing = await db.settings.get('singleton');
   if (existing) return existing;
-  await db.settings.put({ ...DEFAULT_SETTINGS, updatedAt: Date.now() });
-  return (await db.settings.get('singleton'))!;
+  const seeded = { ...DEFAULT_SETTINGS, updatedAt: Date.now() };
+  await db.settings.put(seeded);
+  return seeded;
 }
 
 export async function updateSettings(input: SettingsInput): Promise<Settings> {
-  const current = await getSettings();
+  const current = (await db.settings.get('singleton')) ?? DEFAULT_SETTINGS;
   const merged: Settings = {
     ...current,
     ...input,
