@@ -7,9 +7,19 @@ interface Props {
   messages: Message[];
   streaming: boolean;
   error: string | null;
+  speakingMessageId?: string | null;
+  onSpeak?: (messageId: string, text: string) => void;
+  onStopSpeaking?: () => void;
 }
 
-export default function MessageList({ messages, streaming, error }: Props) {
+export default function MessageList({
+  messages,
+  streaming,
+  error,
+  speakingMessageId,
+  onSpeak,
+  onStopSpeaking,
+}: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,6 +51,26 @@ export default function MessageList({ messages, streaming, error }: Props) {
             <div
               className={`${styles.bubble} ${styles[m.role]}${showCaret ? ` ${styles.streaming}` : ''}`}
             >
+              {m.role === 'assistant' && m.content.length > 0 && onSpeak ? (
+                <button
+                  className={styles.speakBtn}
+                  onClick={() =>
+                    speakingMessageId === m.id
+                      ? onStopSpeaking?.()
+                      : onSpeak(m.id, m.content)
+                  }
+                  aria-label={
+                    speakingMessageId === m.id
+                      ? 'Stop speaking'
+                      : 'Read this message aloud'
+                  }
+                  title={
+                    speakingMessageId === m.id ? 'Stop speaking' : 'Read aloud'
+                  }
+                >
+                  {speakingMessageId === m.id ? '■' : '🔊'}
+                </button>
+              ) : null}
               {m.content.length > 0 ? (
                 <ReactMarkdown>{m.content}</ReactMarkdown>
               ) : (

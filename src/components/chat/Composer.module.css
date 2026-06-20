@@ -47,6 +47,53 @@
     opacity 0.15s ease;
 }
 
+.micBtn,
+.micBtnListening {
+  border: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.1s ease,
+    opacity 0.15s ease;
+}
+
+.micBtn {
+  background: #e8f4ff;
+  color: var(--cloud-fg);
+}
+
+.micBtnListening {
+  background: #ffafcc;
+  color: white;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.micBtn:hover:not(:disabled),
+.micBtnListening:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.micBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 175, 204, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 175, 204, 0);
+  }
+}
+
 .sendBtn:hover:not(:disabled) {
   transform: scale(1.05);
 }

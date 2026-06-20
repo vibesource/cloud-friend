@@ -4,9 +4,9 @@ A browser-only AI friend for kids. Cloud is a cat riding a floating cloud — sh
 remembers what your child tells her, reacts with cute animations, can talk and
 listen, and can draw pictures on request.
 
-**Status:** Phase 1 complete — chat, memory, and settings work end-to-end.
-Voice, image generation, and engagement extras land in later phases. See
-`docs/plan.md` for the full roadmap.
+**Status:** Phase 3 complete — chat, memory, settings, emotions, tap-to-speak,
+and mic input work end-to-end. Image generation and engagement extras land in
+later phases. See `docs/plan.md` for the full roadmap.
 
 ## Quick start
 
@@ -58,6 +58,9 @@ See `docs/plan.md` for the phase breakdown and architectural decisions, and
 - A kid-safe system prompt is always layered under the editable personality,
   plus an optional keyword backstop filter (on by default). Both are documented
   in `src/lib/safety/prompt.ts`.
+- Voice has two TTS providers: Web Speech API (instant, OS/browser voices) and
+  Kokoro (`kokoro-js`, browser-local model). Kokoro is opt-in in Settings and
+  downloads its model/WASM chunk only on first use.
 
 ## First-run setup
 

@@ -16,6 +16,13 @@ interface Props {
   onClearError: () => void;
   /** Tap on Cloud -> random cute reaction. No-op when streaming. */
   onAvatarClick?: () => void;
+  speakingMessageId?: string | null;
+  listening?: boolean;
+  transcriptPreview?: string;
+  onSpeak?: (messageId: string, text: string) => void;
+  onStopSpeaking?: () => void;
+  onListen?: () => Promise<string>;
+  onStopListening?: () => void;
 }
 
 export default function ChatView({
@@ -28,6 +35,13 @@ export default function ChatView({
   onCancel,
   onClearError,
   onAvatarClick,
+  speakingMessageId,
+  listening,
+  transcriptPreview,
+  onSpeak,
+  onStopSpeaking,
+  onListen,
+  onStopListening,
 }: Props) {
   return (
     <div className={styles.chat}>
@@ -41,9 +55,13 @@ export default function ChatView({
         <div className={styles.status}>
           {streaming
             ? 'Cloud is typing…'
-            : ready
-              ? 'Cloud is here — tap to boop her!'
-              : 'Almost ready…'}
+            : speakingMessageId
+              ? 'Cloud is speaking…'
+              : listening
+                ? 'Cloud is listening…'
+                : ready
+                  ? 'Cloud is here — tap to boop her!'
+                  : 'Almost ready…'}
         </div>
         {!ready && (
           <div className={styles.warning}>
@@ -53,14 +71,25 @@ export default function ChatView({
       </header>
 
       <div className={styles.body}>
-        <MessageList messages={messages} streaming={streaming} error={error} />
+        <MessageList
+          messages={messages}
+          streaming={streaming}
+          error={error}
+          speakingMessageId={speakingMessageId}
+          onSpeak={onSpeak}
+          onStopSpeaking={onStopSpeaking}
+        />
         <Composer
           onSend={(t) => {
             if (error) onClearError();
             onSend(t);
           }}
           onCancel={onCancel}
+          onListen={onListen}
+          onStopListening={onStopListening}
           streaming={streaming}
+          listening={listening}
+          transcriptPreview={transcriptPreview}
           disabled={!ready}
         />
       </div>

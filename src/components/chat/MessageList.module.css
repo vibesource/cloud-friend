@@ -28,6 +28,7 @@
 }
 
 .bubble {
+  position: relative;
   max-width: 78%;
   padding: 0.6rem 0.9rem;
   border-radius: 16px;
@@ -35,6 +36,36 @@
   line-height: 1.4;
   word-wrap: break-word;
   overflow-wrap: anywhere;
+}
+
+.bubble.assistant {
+  padding-right: 2.4rem;
+}
+
+.speakBtn {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(189, 224, 254, 0.65);
+  color: var(--cloud-fg);
+  cursor: pointer;
+  font-size: 0.78rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.1s ease,
+    background 0.15s ease;
+}
+
+.speakBtn:hover {
+  background: rgba(255, 175, 204, 0.8);
+  transform: scale(1.08);
 }
 
 .bubble.user {

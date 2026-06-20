@@ -191,7 +191,7 @@ page reloads. Settings page works.
 **Exit:** Cloud visibly reacts to the conversation. The child smiles. This is the
 moment the product becomes a _friend_.
 
-### Phase 3 — Voice (TTS + STT) _(sensory)_
+### Phase 3 — Voice (TTS + STT) ✅ _(sensory)_
 
 - Implement provider abstraction for TTS and STT.
 - Default: Web Speech API (built-in, zero setup).

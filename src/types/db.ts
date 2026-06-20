@@ -60,6 +60,30 @@ export interface MemoryConfig {
   maxFactsInjected: number;
 }
 
+/** Which TTS engine to use. */
+export type TTSProvider = 'web-speech' | 'kokoro';
+
+export interface TTSConfig {
+  provider: TTSProvider;
+  /** Voice name for the active provider (Web Speech voiceURI or Kokoro voice id). */
+  voice: string;
+  /** Playback rate, 0.5–2.0. Default 1. */
+  rate: number;
+  /** Pitch for Web Speech only, 0–2. Default 1. */
+  pitch: number;
+  /** Kokoro quantization, e.g. 'fp32' | 'fp16' | 'q8' | 'q4' | 'q4f16'. */
+  kokoroDtype: string;
+}
+
+/** Which STT engine to use. */
+export type STTProvider = 'web-speech';
+
+export interface STTConfig {
+  provider: STTProvider;
+  /** BCP-47 language tag, e.g. 'en-US'. */
+  lang: string;
+}
+
 export interface Settings {
   id: 'singleton';
   llm: LLMConfig;
@@ -68,6 +92,8 @@ export interface Settings {
   memory: MemoryConfig;
   personalityPrompt: string;
   safety: SafetyConfig;
+  tts: TTSConfig;
+  stt: STTConfig;
   updatedAt: number;
 }
 

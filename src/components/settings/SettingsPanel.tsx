@@ -1,8 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Settings, SettingsInput } from '@/types/db';
+import { KOKORO_VOICES } from '@/lib/providers/tts/kokoro';
 import { useFacts } from '@/lib/storage/hooks';
 import { deleteFact, clearAllFacts } from '@/lib/memory/store';
-import { Checkbox, NumberField, TextArea, TextField } from './SettingsFields';
+import {
+  Checkbox,
+  NumberField,
+  SelectField,
+  TextArea,
+  TextField,
+} from './SettingsFields';
 import styles from './SettingsPanel.module.css';
 
 interface Props {
@@ -160,6 +167,111 @@ export default function SettingsPanel({ settings, onSave, onClose }: Props) {
                 }
               />
             </div>
+          </section>
+
+          <section className={styles.section}>
+            <h3>Voice</h3>
+            <SelectField
+              label="Speech voice provider"
+              hint="Web Speech is instant. Kokoro sounds better but downloads an in-browser model on first use."
+              value={draft.tts.provider}
+              onChange={(e) =>
+                patch({
+                  tts: {
+                    ...draft.tts,
+                    provider:
+                      e.target.value === 'kokoro' ? 'kokoro' : 'web-speech',
+                    voice:
+                      e.target.value === 'kokoro'
+                        ? draft.tts.voice || 'af_sky'
+                        : draft.tts.voice,
+                  },
+                })
+              }
+            >
+              <option value="web-speech">Browser voice (Web Speech)</option>
+              <option value="kokoro">Cloud voice (Kokoro, local model)</option>
+            </SelectField>
+
+            {draft.tts.provider === 'kokoro' ? (
+              <div className={styles.row2}>
+                <SelectField
+                  label="Kokoro voice"
+                  value={draft.tts.voice || 'af_sky'}
+                  onChange={(e) =>
+                    patch({ tts: { ...draft.tts, voice: e.target.value } })
+                  }
+                >
+                  {KOKORO_VOICES.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.label}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  label="Kokoro quality"
+                  hint="q8 is the best default for WASM. WebGPU uses fp32 automatically."
+                  value={draft.tts.kokoroDtype}
+                  onChange={(e) =>
+                    patch({
+                      tts: { ...draft.tts, kokoroDtype: e.target.value },
+                    })
+                  }
+                >
+                  <option value="q8">q8 (recommended)</option>
+                  <option value="q4">q4 (smaller)</option>
+                  <option value="q4f16">q4f16</option>
+                  <option value="fp16">fp16</option>
+                  <option value="fp32">fp32</option>
+                </SelectField>
+              </div>
+            ) : (
+              <TextField
+                label="Browser voice URI (optional)"
+                hint="Leave blank to let Cloud pick a friendly local voice."
+                value={draft.tts.voice}
+                onChange={(e) =>
+                  patch({ tts: { ...draft.tts, voice: e.target.value } })
+                }
+              />
+            )}
+
+            <div className={styles.row2}>
+              <NumberField
+                label="Speech rate"
+                value={draft.tts.rate}
+                min={0.5}
+                max={2}
+                step={0.05}
+                onChange={(e) =>
+                  patch({
+                    tts: { ...draft.tts, rate: Number(e.target.value) },
+                  })
+                }
+              />
+              <NumberField
+                label="Pitch"
+                hint="Web Speech only. Kokoro ignores pitch."
+                value={draft.tts.pitch}
+                min={0}
+                max={2}
+                step={0.05}
+                onChange={(e) =>
+                  patch({
+                    tts: { ...draft.tts, pitch: Number(e.target.value) },
+                  })
+                }
+              />
+            </div>
+
+            <TextField
+              label="Speech recognition language"
+              hint="Used by the mic button. Example: en-US, en-GB."
+              value={draft.stt.lang}
+              onChange={(e) =>
+                patch({ stt: { ...draft.stt, lang: e.target.value } })
+              }
+            />
           </section>
 
           <section className={styles.section}>

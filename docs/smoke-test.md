@@ -96,3 +96,33 @@ Run after the Phase 1 checks, with valid LLM settings.
 - [ ] Rapid taps extend the boop instead of cutting it short
 - [ ] Tap Cloud while she's streaming → no-op (boop is suppressed mid-turn)
 - [ ] Cursor becomes a pointer when hovering Cloud
+
+## Phase 3 — voice
+
+Run after the Phase 1/2 checks, with valid LLM settings.
+
+### Tap-to-speak
+
+- [ ] Cloud replies show a small speaker button in the top-right of the bubble
+- [ ] Tap speaker → message is read aloud; Cloud avatar switches to talking
+- [ ] Tap the stop icon (■) on the same message → speech stops and avatar returns
+- [ ] Emoji / markdown markers are not read aloud (speech text is cleaned)
+- [ ] Change Settings → Voice → Speech voice provider to Kokoro, save, then tap speaker
+      → first use downloads the Kokoro model, later uses are cached by the browser
+- [ ] With Kokoro selected, try `af_sky`, `af_heart`, and `af_bella` voices
+
+### Mic input
+
+- [ ] Tap microphone in the composer → browser asks for mic permission
+- [ ] While listening, the mic pulses and banner says "Cloud is listening…"
+- [ ] Speak a short sentence; interim transcript appears under the composer
+- [ ] Stop speaking or tap the red mic → final transcript is sent to Cloud
+- [ ] If the browser does not support Web Speech Recognition, an error appears
+      explaining that Chrome/Edge are recommended
+
+### Voice settings
+
+- [ ] Settings → Voice shows provider selector, voice selector, rate/pitch, language
+- [ ] Web Speech provider works without any model download
+- [ ] Kokoro provider only loads after tapping a speaker while Kokoro is selected
+- [ ] Changing speech recognition language persists after page refresh

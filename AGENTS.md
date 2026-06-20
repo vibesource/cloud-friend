@@ -44,6 +44,9 @@ npm run preview             # preview the built bundle
   **utility** (memory extraction as content scrolls out of context).
 - **Image generation:** Huggingface via `@huggingface/inference`
   `InferenceClient.textToImage()` — works browser-side, returns a `Blob`.
+- **Voice:** TTS supports Web Speech API and Kokoro (`kokoro-js`). Kokoro must
+  stay dynamically imported (`import('kokoro-js')`) so the large model/runtime
+  chunk is opt-in and only loaded when selected in Settings.
 - **Code style:** Prettier (single quotes, trailing commas, 2-space). ESLint
   with `typescript-eslint` + `react-hooks` + `react-refresh`. Don't disable
   lint rules ad hoc; configure in `eslint.config.js` if needed.

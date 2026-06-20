@@ -52,6 +52,17 @@ export const DEFAULT_SETTINGS: Settings = {
     keywordFilterEnabled: true,
     customBlocklist: [],
   },
+  tts: {
+    provider: 'web-speech',
+    voice: '',
+    rate: 1,
+    pitch: 1,
+    kokoroDtype: 'q8',
+  },
+  stt: {
+    provider: 'web-speech',
+    lang: 'en-US',
+  },
   updatedAt: 0,
 };
 
@@ -93,6 +104,29 @@ export class CloudDB extends Dexie {
           await tx.table('settings').put({
             ...row,
             personalityPrompt: DEFAULT_PERSONALITY,
+            updatedAt: Date.now(),
+          });
+        }
+      });
+
+    // v3: add voice (TTS + STT) config. Seed defaults for existing users.
+    this.version(3)
+      .stores({
+        messages: 'id, role, ts',
+        facts: 'id, kind, ts, lastUsed, confidence',
+        images: 'id, ts',
+        meta: 'key',
+        settings: 'id',
+      })
+      .upgrade(async (tx) => {
+        const row = (await tx.table('settings').get('singleton')) as
+          | (Settings & { tts?: unknown; stt?: unknown })
+          | undefined;
+        if (row && (!row.tts || !row.stt)) {
+          await tx.table('settings').put({
+            ...row,
+            tts: row.tts ?? DEFAULT_SETTINGS.tts,
+            stt: row.stt ?? DEFAULT_SETTINGS.stt,
             updatedAt: Date.now(),
           });
         }
@@ -156,6 +190,8 @@ export async function updateSettings(input: SettingsInput): Promise<Settings> {
     image: { ...current.image, ...(input.image ?? {}) },
     memory: { ...current.memory, ...(input.memory ?? {}) },
     safety: { ...current.safety, ...(input.safety ?? {}) },
+    tts: { ...current.tts, ...(input.tts ?? {}) },
+    stt: { ...current.stt, ...(input.stt ?? {}) },
     updatedAt: Date.now(),
   };
   await db.settings.put(merged);
