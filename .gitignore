@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Dexie / IndexedDB exports (dev artifacts, never committed)
+*.dexie
+*.idb
+
+# Vite cache
+.vite/
+
+# tsc build info (incremental cache)
+*.tsbuildinfo
