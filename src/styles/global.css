@@ -1,14 +1,30 @@
 :root {
+  /* Palette */
   --cloud-bg: #bde0fe;
+  --cloud-bg-light: #ffffff;
   --cloud-fg: #1f2a3a;
   --cloud-accent: #ffafcc;
+  --cloud-accent-strong: #d68fb0;
+
+  /* Surfaces */
+  --cloud-panel-bg: rgba(255, 255, 255, 0.85);
+  --cloud-divider: rgba(31, 42, 58, 0.1);
+
+  /* Inputs */
+  --cloud-input-bg: #fbfbfd;
+  --cloud-input-border: rgba(31, 42, 58, 0.15);
+  --cloud-focus-ring: rgba(255, 175, 204, 0.35);
+
   font-family:
+    'Baloo 2',
+    'Comic Sans MS',
     system-ui,
     -apple-system,
     'Segoe UI',
     Roboto,
     sans-serif;
   color: var(--cloud-fg);
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -23,27 +39,16 @@ body,
 }
 
 body {
-  background: linear-gradient(180deg, #bde0fe 0%, #ffffff 100%);
+  background: linear-gradient(180deg, #bde0fe 0%, #ffffff 60%, #fff0f6 100%);
+  overscroll-behavior-y: none;
 }
 
-.app-shell {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem;
+button {
+  font-family: inherit;
 }
 
-.app-shell h1 {
-  margin: 0;
-  font-size: 3rem;
-  font-weight: 700;
-}
-
-.tagline {
-  margin-top: 0.5rem;
-  font-size: 1.1rem;
-  opacity: 0.75;
+input,
+textarea,
+select {
+  font-family: inherit;
 }

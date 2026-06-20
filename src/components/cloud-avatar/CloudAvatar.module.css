@@ -1,0 +1,44 @@
+.avatar {
+  position: relative;
+  width: var(--cloud-avatar-size, 140px);
+  height: var(--cloud-avatar-size, 140px);
+  display: inline-block;
+  user-select: none;
+}
+
+.avatar svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.cloud-body {
+  animation: drift 6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.face {
+  animation: bob 3.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translateX(-2%);
+  }
+  50% {
+    transform: translateX(2%);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3%);
+  }
+}

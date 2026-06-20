@@ -159,7 +159,7 @@ finish one in a sitting.
 **Exit:** `npm run dev` shows a hello-world page; `npm run build` passes; `npm run lint`
 and `npm run typecheck` are clean.
 
-### Phase 1 — Chat + memory + settings _(core)_
+### Phase 1 — Chat + memory + settings ✅ _(core)_
 
 This is the milestone you asked for. No media yet.
 

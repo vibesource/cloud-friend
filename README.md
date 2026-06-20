@@ -4,8 +4,9 @@ A browser-only AI friend for kids. Cloud is a cat riding a floating cloud — sh
 remembers what your child tells her, reacts with cute animations, can talk and
 listen, and can draw pictures on request.
 
-**Status:** Phase 0 complete (project scaffold). See `docs/plan.md` for the full
-roadmap.
+**Status:** Phase 1 complete — chat, memory, and settings work end-to-end.
+Voice, image generation, and engagement extras land in later phases. See
+`docs/plan.md` for the full roadmap.
 
 ## Quick start
 
@@ -16,16 +17,16 @@ npm run dev      # start the dev server at http://localhost:5173
 
 ## Common commands
 
-| Command                    | Purpose                                            |
-| -------------------------- | -------------------------------------------------- |
-| `npm run dev`              | Vite dev server with HMR                           |
-| `npm run build`            | Type-check then build production bundle to `dist/` |
-| `npm run preview`          | Preview the production build locally               |
-| `npm run typecheck`        | `tsc --noEmit` across the project                  |
-| `npm run lint`             | ESLint flat-config check                           |
-| `npm run lint:fix`         | ESLint with `--fix`                                |
-| `npm run format`           | Prettier write                                     |
-| `npm run format:check`     | Prettier check (CI-friendly)                       |
+| Command                | Purpose                                            |
+| ---------------------- | -------------------------------------------------- |
+| `npm run dev`          | Vite dev server with HMR                           |
+| `npm run build`        | Type-check then build production bundle to `dist/` |
+| `npm run preview`      | Preview the production build locally               |
+| `npm run typecheck`    | `tsc --noEmit` across the project                  |
+| `npm run lint`         | ESLint flat-config check                           |
+| `npm run lint:fix`     | ESLint with `--fix`                                |
+| `npm run format`       | Prettier write                                     |
+| `npm run format:check` | Prettier check (CI-friendly)                       |
 
 Recommended order before committing: `lint` → `typecheck` → `build`.
 
@@ -54,3 +55,17 @@ See `docs/plan.md` for the phase breakdown and architectural decisions, and
   to call the providers you configure.
 - Chat history, memory facts, and generated images can be reviewed and deleted
   from Settings at any time.
+- A kid-safe system prompt is always layered under the editable personality,
+  plus an optional keyword backstop filter (on by default). Both are documented
+  in `src/lib/safety/prompt.ts`.
+
+## First-run setup
+
+1. `npm install && npm run dev`
+2. Open http://localhost:5173
+3. Click the gear icon (top right) and fill in:
+   - Base URL (e.g. `https://api.openai.com`)
+   - API key
+   - Main model (e.g. `gpt-4o-mini`)
+   - Utility model — can be the same; used for memory extraction
+4. Close Settings and say hi to Cloud.

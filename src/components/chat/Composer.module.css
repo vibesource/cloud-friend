@@ -1,0 +1,88 @@
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--cloud-divider);
+  background: var(--cloud-panel-bg);
+}
+
+.textarea {
+  flex: 1;
+  resize: none;
+  min-height: 2.5rem;
+  max-height: 8rem;
+  padding: 0.6rem 0.8rem;
+  font: inherit;
+  font-size: 0.95rem;
+  border-radius: 16px;
+  border: 1px solid var(--cloud-input-border);
+  background: var(--cloud-input-bg);
+  color: var(--cloud-fg);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.textarea:focus {
+  border-color: var(--cloud-accent);
+  box-shadow: 0 0 0 3px var(--cloud-focus-ring);
+}
+
+.sendBtn {
+  border: none;
+  background: var(--cloud-accent);
+  color: white;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.1s ease,
+    opacity 0.15s ease;
+}
+
+.sendBtn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.sendBtn:disabled {
+  opacity: 0.5;
+  cursor: 'not-allowed';
+}
+
+.stopBtn {
+  border: none;
+  background: #fde4e0;
+  color: #b3261e;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hint {
+  font-size: 0.7rem;
+  opacity: 0.55;
+  margin-top: 0.3rem;
+  text-align: right;
+  padding: 0 0.5rem;
+}
+
+.kbd {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0 0.3rem;
+  border-radius: 3px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.65rem;
+}
