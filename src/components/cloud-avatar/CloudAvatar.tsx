@@ -73,12 +73,45 @@ export default function CloudAvatar({
           </>
         )}
 
-        {/* cloud body */}
+        {/* cloud body — tinted very light blue with subtle blue-gray outline
+            so it has shape even on off-white panel backgrounds */}
         <g className={styles.cloudBody}>
-          <ellipse cx="60" cy="78" rx="46" ry="22" fill="#ffffff" />
-          <ellipse cx="36" cy="62" rx="18" ry="16" fill="#ffffff" />
-          <ellipse cx="60" cy="52" rx="22" ry="20" fill="#ffffff" />
-          <ellipse cx="84" cy="62" rx="20" ry="17" fill="#ffffff" />
+          <ellipse
+            cx="60"
+            cy="78"
+            rx="46"
+            ry="22"
+            fill="#f3f8ff"
+            stroke="#d8e6f7"
+            strokeWidth="1"
+          />
+          <ellipse
+            cx="36"
+            cy="62"
+            rx="18"
+            ry="16"
+            fill="#f3f8ff"
+            stroke="#d8e6f7"
+            strokeWidth="1"
+          />
+          <ellipse
+            cx="60"
+            cy="52"
+            rx="22"
+            ry="20"
+            fill="#f3f8ff"
+            stroke="#d8e6f7"
+            strokeWidth="1"
+          />
+          <ellipse
+            cx="84"
+            cy="62"
+            rx="20"
+            ry="17"
+            fill="#f3f8ff"
+            stroke="#d8e6f7"
+            strokeWidth="1"
+          />
         </g>
 
         {/* rain when sad */}

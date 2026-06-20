@@ -5,6 +5,10 @@
   display: inline-block;
   user-select: none;
   cursor: var(--cloud-avatar-cursor, default);
+  /* Soft drop shadow so the cloud reads as a shape on any background.
+     Inline SVG ignores filter: drop-shadow on individual ellipses, but
+     applying it to the whole wrapper element works across all major browsers. */
+  filter: drop-shadow(0 4px 6px rgba(120, 160, 210, 0.25));
 }
 
 .avatar svg {
