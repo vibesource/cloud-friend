@@ -36,11 +36,37 @@ function assertConfigured(config: LLMConfig): void {
   }
 }
 
+/**
+ * Normalize the user-supplied base URL into a full chat-completions endpoint.
+ *
+ * Users enter a variety of forms: `https://api.openai.com`,
+ * `https://api.openai.com/v1`, `https://x/v1/`, even the full path. We
+ * collapse all of these to `<origin>/v1/chat/completions` without doubling
+ * the `/v1` segment, and never mangle a caller that already named the path.
+ */
 function resolveBaseUrl(baseUrl: string): string {
-  const trimmed = baseUrl.replace(/\/+$/, '');
-  return trimmed.endsWith('/chat/completions')
-    ? trimmed
-    : `${trimmed}/v1/chat/completions`;
+  const trimmed = baseUrl.trim().replace(/\/+$/, '');
+  if (trimmed.length === 0) return trimmed;
+
+  // Already a full chat-completions URL — leave it alone.
+  if (/\/chat\/completions$/.test(trimmed)) return trimmed;
+
+  // Anything ending in /v1 (or /v2, etc.) — just append the path.
+  if (/\/v\d+$/.test(trimmed)) return `${trimmed}/chat/completions`;
+
+  // Otherwise, append the version segment too. This avoids the
+  // `/v1/v1/chat/completions` bug when the user pastes a base URL that
+  // already includes /v1 but doesn't match the regex above (e.g. with
+  // a trailing slash we just stripped).
+  return `${trimmed}/v1/chat/completions`;
+}
+
+function safeOrigin(url: string): string {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return url;
+  }
 }
 
 export async function streamChat(
@@ -49,21 +75,36 @@ export async function streamChat(
   assertConfigured(opts.config);
 
   const url = resolveBaseUrl(opts.config.baseUrl);
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${opts.config.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: opts.config.mainModel,
-      messages: opts.messages,
-      stream: true,
-      temperature: opts.temperature ?? 0.7,
-      ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
-    }),
-    signal: opts.signal,
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${opts.config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: opts.config.mainModel,
+        messages: opts.messages,
+        stream: true,
+        temperature: opts.temperature ?? 0.7,
+        ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
+      }),
+      signal: opts.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') throw err;
+    // A failed preflight or blocked request usually surfaces as a
+    // TypeError "NetworkError" or a CORS failure. Fetch can't tell them
+    // apart from a real network outage, so we give the user the most
+    // actionable hint.
+    throw new LLMError(
+      `Could not reach ${url}. If this is a CORS error, the server at ` +
+        `${safeOrigin(url)} must allow browser requests ` +
+        `(send an Access-Control-Allow-Origin header). Also check the ` +
+        `URL and your network connection.`,
+    );
+  }
 
   if (!res.ok) {
     const bodyText = await res.text().catch(() => '');
