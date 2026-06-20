@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getSTTProvider } from '@/lib/providers/stt/registry';
 import { applyConfig, getTTSProvider } from '@/lib/providers/tts/registry';
+import { DEFAULT_SETTINGS } from '@/lib/storage/db';
 import type { STTConfig, Settings } from '@/types/db';
 
 interface UseVoiceResult {
@@ -26,23 +27,25 @@ export function useVoice(settings: Settings | undefined): UseVoiceResult {
 
   useEffect(() => {
     if (!settings) return;
-    const provider = getTTSProvider(settings.tts);
-    applyConfig(provider, settings.tts);
+    const ttsConfig = settings.tts ?? DEFAULT_SETTINGS.tts;
+    const provider = getTTSProvider(ttsConfig);
+    applyConfig(provider, ttsConfig);
   }, [settings]);
 
   const stopSpeaking = useCallback(() => {
     if (!settings) return;
     ttsAbortRef.current?.abort();
     ttsAbortRef.current = null;
-    getTTSProvider(settings.tts).cancel();
+    getTTSProvider(settings.tts ?? DEFAULT_SETTINGS.tts).cancel();
     setSpeakingMessageId(null);
   }, [settings]);
 
   const speakMessage = useCallback(
     async (messageId: string, text: string) => {
       if (!settings) return;
-      const provider = getTTSProvider(settings.tts);
-      applyConfig(provider, settings.tts);
+      const ttsConfig = settings.tts ?? DEFAULT_SETTINGS.tts;
+      const provider = getTTSProvider(ttsConfig);
+      applyConfig(provider, ttsConfig);
       stopSpeaking();
 
       const controller = new AbortController();
@@ -65,15 +68,16 @@ export function useVoice(settings: Settings | undefined): UseVoiceResult {
 
   const stopListening = useCallback(() => {
     if (!settings) return;
-    getSTTProvider(settings.stt).stop();
+    getSTTProvider(settings.stt ?? DEFAULT_SETTINGS.stt).stop();
   }, [settings]);
 
   const listenOnce = useCallback(async (): Promise<string> => {
     if (!settings) return '';
-    const provider = getSTTProvider(settings.stt);
+    const sttConfig = settings.stt ?? DEFAULT_SETTINGS.stt;
+    const provider = getSTTProvider(sttConfig);
     (
       provider as typeof provider & { updateConfig?: (c: STTConfig) => void }
-    ).updateConfig?.(settings.stt);
+    ).updateConfig?.(sttConfig);
     setListening(true);
     setTranscriptPreview('');
     setError(null);
@@ -96,8 +100,8 @@ export function useVoice(settings: Settings | undefined): UseVoiceResult {
     return () => {
       ttsAbortRef.current?.abort();
       if (settings) {
-        getTTSProvider(settings.tts).cancel();
-        getSTTProvider(settings.stt).stop();
+        getTTSProvider(settings.tts ?? DEFAULT_SETTINGS.tts).cancel();
+        getSTTProvider(settings.stt ?? DEFAULT_SETTINGS.stt).stop();
       }
     };
   }, [settings]);

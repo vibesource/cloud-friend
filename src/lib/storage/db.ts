@@ -149,11 +149,31 @@ const PREVIOUS_DEFAULT_PERSONALITY = [
 export const db = new CloudDB();
 
 /**
+ * Merge persisted settings with current defaults so older IndexedDB rows keep
+ * working when new nested config sections are added (tts/stt, future media,
+ * etc). This is intentionally shallow + per-nested-object; it preserves user
+ * edits but fills missing fields from DEFAULT_SETTINGS.
+ */
+export function normalizeSettings(settings: Settings): Settings {
+  return {
+    ...DEFAULT_SETTINGS,
+    ...settings,
+    llm: { ...DEFAULT_SETTINGS.llm, ...(settings.llm ?? {}) },
+    image: { ...DEFAULT_SETTINGS.image, ...(settings.image ?? {}) },
+    memory: { ...DEFAULT_SETTINGS.memory, ...(settings.memory ?? {}) },
+    safety: { ...DEFAULT_SETTINGS.safety, ...(settings.safety ?? {}) },
+    tts: { ...DEFAULT_SETTINGS.tts, ...(settings.tts ?? {}) },
+    stt: { ...DEFAULT_SETTINGS.stt, ...(settings.stt ?? {}) },
+  };
+}
+
+/**
  * Read-only fetch of settings. Safe to call from a useLiveQuery querier.
  * Returns undefined if settings have never been seeded.
  */
 export async function readSettings(): Promise<Settings | undefined> {
-  return db.settings.get('singleton');
+  const existing = await db.settings.get('singleton');
+  return existing ? normalizeSettings(existing) : undefined;
 }
 
 /**
@@ -163,7 +183,14 @@ export async function readSettings(): Promise<Settings | undefined> {
  */
 export async function ensureSettingsSeeded(): Promise<Settings | undefined> {
   const existing = await db.settings.get('singleton');
-  if (existing) return undefined;
+  if (existing) {
+    const normalized = normalizeSettings(existing);
+    if (JSON.stringify(existing) !== JSON.stringify(normalized)) {
+      await db.settings.put({ ...normalized, updatedAt: Date.now() });
+      return normalized;
+    }
+    return undefined;
+  }
   const seeded = { ...DEFAULT_SETTINGS, updatedAt: Date.now() };
   await db.settings.put(seeded);
   return seeded;
@@ -175,14 +202,16 @@ export async function ensureSettingsSeeded(): Promise<Settings | undefined> {
  */
 export async function getSettings(): Promise<Settings> {
   const existing = await db.settings.get('singleton');
-  if (existing) return existing;
+  if (existing) return normalizeSettings(existing);
   const seeded = { ...DEFAULT_SETTINGS, updatedAt: Date.now() };
   await db.settings.put(seeded);
   return seeded;
 }
 
 export async function updateSettings(input: SettingsInput): Promise<Settings> {
-  const current = (await db.settings.get('singleton')) ?? DEFAULT_SETTINGS;
+  const current = normalizeSettings(
+    (await db.settings.get('singleton')) ?? DEFAULT_SETTINGS,
+  );
   const merged: Settings = {
     ...current,
     ...input,
