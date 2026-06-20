@@ -66,3 +66,33 @@ Fill in: base URL (e.g. `https://api.openai.com`), API key, main model
 
 - `git status` to confirm only intended files changed
 - Commit with a `Phase N:` prefix per `AGENTS.md`
+
+## Phase 2 — emotion animations
+
+Run after the Phase 1 checks, with valid LLM settings.
+
+### Idle and ambient
+
+- [ ] Cloud drifts gently side-to-side and bobs up/down when nothing is happening
+- [ ] Verify in OS settings: enable "Reduce motion" / `prefers-reduced-motion`
+      → all animations should stop completely
+
+### During a turn
+
+- [ ] On send, Cloud's face goes to **thinking** (small puff orbits her head)
+- [ ] While tokens stream, Cloud's face bobs faster (**talking** chatter motion)
+- [ ] When the reply finishes, Cloud's face settles on an inferred emotion
+- [ ] Try "tell me a happy story" → Cloud ends with happy face + sparkles
+- [ ] Try "say something exciting!" → Cloud ends with surprised face + "!" bang
+- [ ] Try "what's 2+2? actually nvm" → Cloud's reply ends in thinking face
+      if she says "hmm"; or happy by default
+- [ ] If the reply trips the keyword filter, Cloud shows the **sad** face
+
+### Tap to boop
+
+- [ ] When idle, banner status reads "Cloud is here — tap to boop her!"
+- [ ] Tap Cloud → she briefly shows a random cute emotion (happy/surprise/blush)
+      with hearts or sparkles, then returns to her prior mood after ~1.4s
+- [ ] Rapid taps extend the boop instead of cutting it short
+- [ ] Tap Cloud while she's streaming → no-op (boop is suppressed mid-turn)
+- [ ] Cursor becomes a pointer when hovering Cloud

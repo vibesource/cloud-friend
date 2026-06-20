@@ -14,6 +14,8 @@ interface Props {
   onSend: (text: string) => void;
   onCancel: () => void;
   onClearError: () => void;
+  /** Tap on Cloud -> random cute reaction. No-op when streaming. */
+  onAvatarClick?: () => void;
 }
 
 export default function ChatView({
@@ -25,17 +27,22 @@ export default function ChatView({
   onSend,
   onCancel,
   onClearError,
+  onAvatarClick,
 }: Props) {
   return (
     <div className={styles.chat}>
       <header className={styles.banner}>
-        <CloudAvatar emotion={emotion} size={120} />
+        <CloudAvatar
+          emotion={emotion}
+          size={120}
+          onAvatarClick={onAvatarClick}
+        />
         <h2>Cloud</h2>
         <div className={styles.status}>
           {streaming
             ? 'Cloud is typing…'
             : ready
-              ? 'Cloud is here'
+              ? 'Cloud is here — tap to boop her!'
               : 'Almost ready…'}
         </div>
         {!ready && (

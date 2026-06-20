@@ -178,7 +178,7 @@ This is the milestone you asked for. No media yet.
 **Exit:** Child can hold a real conversation with Cloud, who remembers things across
 page reloads. Settings page works.
 
-### Phase 2 — Emotion animations _(delight spike)_
+### Phase 2 — Emotion animations ✅ _(delight spike)_
 
 - Full SVG cat-cloud character with the emotion table above.
 - `useCloud` hook infers emotion from the latest assistant message (via a tiny

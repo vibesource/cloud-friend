@@ -33,6 +33,7 @@ export default function AppShell() {
           onSend={chat.send}
           onCancel={chat.cancel}
           onClearError={chat.clearError}
+          onAvatarClick={chat.boop}
         />
       </main>
 

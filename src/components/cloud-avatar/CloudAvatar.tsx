@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { Emotion } from '@/types/db';
 import styles from './CloudAvatar.module.css';
 
@@ -26,18 +27,51 @@ export default function CloudAvatar({
   const happy = emotion === 'happy' || emotion === 'talking';
   const thinking = emotion === 'thinking';
 
+  const interactive = typeof onAvatarClick === 'function';
+  const [booping, setBooping] = useState(false);
+
+  useEffect(() => {
+    if (!booping) return;
+    const t = setTimeout(() => setBooping(false), 420);
+    return () => clearTimeout(t);
+  }, [booping]);
+
+  function handleClick() {
+    if (!interactive) return;
+    setBooping(true);
+    onAvatarClick?.();
+  }
+
+  const rootClass = [
+    styles.avatar,
+    styles[emotion] ?? '',
+    booping ? styles.boop : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div
-      className={styles.avatar}
-      style={{ ['--cloud-avatar-size' as string]: `${size}px` }}
-      onClick={onAvatarClick}
-      role={onAvatarClick ? 'button' : undefined}
+      className={rootClass}
+      style={{
+        ['--cloud-avatar-size' as string]: `${size}px`,
+        ['--cloud-avatar-cursor' as string]: interactive
+          ? 'pointer'
+          : 'default',
+      }}
+      onClick={handleClick}
+      role={interactive ? 'button' : undefined}
       aria-label={`Cloud feels ${emotion}`}
     >
       <svg viewBox="0 0 120 120" aria-hidden="true">
         {/* ambient sparkles for happy/surprise */}
         {happy && <Sparkles />}
-        {surprised && <Sparkles count={3} />}
+        {surprised && (
+          <>
+            <Sparkles count={3} />
+            <Bang />
+          </>
+        )}
 
         {/* cloud body */}
         <g className={styles.cloudBody}>
@@ -124,8 +158,16 @@ export default function CloudAvatar({
             />
           )}
 
-          {/* thinking puff */}
-          {thinking && <ThinkingDot />}
+          {/* thinking orbit puff */}
+          {thinking && (
+            <circle
+              className={styles.thinkingDot}
+              cx="60"
+              cy="56"
+              r="2.4"
+              fill="#cfe3f8"
+            />
+          )}
         </g>
 
         {/* floating hearts when blushing */}
@@ -184,7 +226,11 @@ function Sparkles({ count = 5 }: { count?: number }) {
   return (
     <g fill="#ffd86b">
       {pts.map((p, i) => (
-        <g key={i} transform={`translate(${p.x} ${p.y})`}>
+        <g
+          key={i}
+          className={styles.sparkle}
+          transform={`translate(${p.x} ${p.y})`}
+        >
           <path d="M0 -3 L1 -1 L3 0 L1 1 L0 3 L-1 1 L-3 0 L-1 -1 Z" />
         </g>
       ))}
@@ -199,6 +245,7 @@ function Rain() {
       {drops.map((x, i) => (
         <ellipse
           key={i}
+          className={styles.raindrop}
           cx={x}
           cy={96 + (i % 2) * 4}
           rx="1.2"
@@ -213,14 +260,38 @@ function Rain() {
 function Hearts() {
   return (
     <g fill="#ff8fb1" opacity="0.9">
-      <path d="M16 30 a2 2 0 0 1 4 0 a2 2 0 0 1 4 0 q0 3 -4 5 q-4 -2 -4 -5 Z" />
-      <path d="M96 22 a1.5 1.5 0 0 1 3 0 a1.5 1.5 0 0 1 3 0 q0 2.5 -3 4 q-3 -1.5 -3 -4 Z" />
+      <path
+        className={styles.heart}
+        d="M16 30 a2 2 0 0 1 4 0 a2 2 0 0 1 4 0 q0 3 -4 5 q-4 -2 -4 -5 Z"
+      />
+      <path
+        className={styles.heart}
+        d="M96 22 a1.5 1.5 0 0 1 3 0 a1.5 1.5 0 0 1 3 0 q0 2.5 -3 4 q-3 -1.5 -3 -4 Z"
+      />
+      <path
+        className={styles.heart}
+        d="M50 18 a1 1 0 0 1 2 0 a1 1 0 0 1 2 0 q0 1.8 -2 3 q-2 -1.2 -2 -3 Z"
+      />
     </g>
   );
 }
 
-function ThinkingDot() {
-  return <circle cx="80" cy="48" r="2.2" fill="#cfe3f8" />;
+function Bang() {
+  return (
+    <g className={styles.bang} transform="translate(60 12)">
+      <circle cx="0" cy="0" r="6" fill="#ffd86b" />
+      <text
+        x="0"
+        y="3"
+        textAnchor="middle"
+        fontSize="9"
+        fontWeight="700"
+        fill="#7a5b00"
+      >
+        !
+      </text>
+    </g>
+  );
 }
 
 function SadEye({ cx, cy }: { cx: number; cy: number }) {

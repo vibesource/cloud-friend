@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/storage/db';
 import { useMessages, useSettings } from '@/lib/storage/hooks';
 import { selectContextWindow } from '@/lib/memory/context';
@@ -10,6 +10,7 @@ import {
   isInputSafe,
   isOutputSafe,
 } from '@/lib/safety/prompt';
+import { inferEmotionFromReply, randomBoopEmotion } from '@/lib/cloud/emotion';
 import { streamChat, type ChatTurn } from '@/lib/llm/stream';
 import type { Emotion, Message, Settings } from '@/types/db';
 
@@ -31,6 +32,8 @@ interface UseChatResult {
   send: (text: string) => Promise<void>;
   cancel: () => void;
   clearError: () => void;
+  /** Trigger a brief random cute reaction (tap on Cloud). */
+  boop: () => void;
 }
 
 export function useChat(): UseChatResult {
@@ -40,6 +43,8 @@ export function useChat(): UseChatResult {
   const [cloudEmotion, setCloudEmotion] = useState<Emotion>('idle');
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const boopTimerRef = useRef<number | null>(null);
+  const emotionBeforeBoopRef = useRef<Emotion | null>(null);
 
   const ready =
     !!settings &&
@@ -55,6 +60,31 @@ export function useChat(): UseChatResult {
   }, []);
 
   const clearError = useCallback(() => setError(null), []);
+
+  const boop = useCallback(() => {
+    // Don't interrupt an active stream — let the conversation drive emotion.
+    if (streaming) return;
+    if (boopTimerRef.current !== null) {
+      window.clearTimeout(boopTimerRef.current);
+    } else {
+      emotionBeforeBoopRef.current = cloudEmotion;
+    }
+    const next = randomBoopEmotion();
+    setCloudEmotion(next);
+    boopTimerRef.current = window.setTimeout(() => {
+      setCloudEmotion(emotionBeforeBoopRef.current ?? 'idle');
+      emotionBeforeBoopRef.current = null;
+      boopTimerRef.current = null;
+    }, 1400);
+  }, [streaming, cloudEmotion]);
+
+  useEffect(() => {
+    return () => {
+      if (boopTimerRef.current !== null) {
+        window.clearTimeout(boopTimerRef.current);
+      }
+    };
+  }, []);
 
   const send = useCallback(
     async (text: string) => {
@@ -96,7 +126,7 @@ export function useChat(): UseChatResult {
       await db.messages.bulkPut([userMsg, cloudMsg]);
 
       try {
-        await runTurn({
+        const result = await runTurn({
           priorMessages: messages,
           settings,
           userMsg,
@@ -107,6 +137,7 @@ export function useChat(): UseChatResult {
             setCloudEmotion('talking');
           },
         });
+        setCloudEmotion(result.emotion);
       } catch (err) {
         const aborted = err instanceof Error && err.name === 'AbortError';
         if (!aborted) {
@@ -117,10 +148,10 @@ export function useChat(): UseChatResult {
             content: 'Hmm, I got tangled up. Try again in a moment? 🌥️',
             emotion: 'sad',
           });
+          setCloudEmotion('sad');
         }
       } finally {
         setStreaming(false);
-        setCloudEmotion('idle');
         abortRef.current = null;
       }
     },
@@ -137,6 +168,7 @@ export function useChat(): UseChatResult {
     send,
     cancel,
     clearError,
+    boop,
   };
 }
 
@@ -149,7 +181,7 @@ interface RunTurnArgs {
   onPartial: (partial: string) => void;
 }
 
-async function runTurn(args: RunTurnArgs): Promise<void> {
+async function runTurn(args: RunTurnArgs): Promise<{ emotion: Emotion }> {
   const { priorMessages, settings, userMsg, cloudMsg, signal, onPartial } =
     args;
 
@@ -189,8 +221,10 @@ async function runTurn(args: RunTurnArgs): Promise<void> {
     onPartial(accumulated);
   }
 
+  // If the reply tripped the safety backstop, Cloud looks apologetic
+  // regardless of the inferred emotion — it signals something's off.
   const finalEmotion: Emotion = isOutputSafe(accumulated, settings)
-    ? 'happy'
+    ? inferEmotionFromReply(accumulated)
     : 'sad';
   await db.messages.update(cloudMsg.id, {
     content: accumulated,
@@ -198,4 +232,6 @@ async function runTurn(args: RunTurnArgs): Promise<void> {
   });
 
   if (injectedFacts.length > 0) await markFactsUsed(injectedFacts);
+
+  return { emotion: finalEmotion };
 }
