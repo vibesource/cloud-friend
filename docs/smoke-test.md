@@ -181,3 +181,11 @@ Run after the Phase 1–3 checks, with a Huggingface token in Settings.
 - [ ] Tap speaker on a Cloud reply → Cloud Speaks earned
 - [ ] Refresh page → earned stickers persist
 - [ ] Clear stickers → album returns to unearned state
+
+## Phase 5 — proactive memory recall
+
+- [ ] Create or extract a light preference fact, e.g. "loves purple cats"
+- [ ] Keep chatting normally; Cloud occasionally references the fact naturally
+- [ ] Cloud should not mention a remembered fact every turn
+- [ ] Emotionally heavy facts (worried/sad/scared/etc.) should not be proactively recalled
+- [ ] Cooldown prevents repeated proactive recall for ~5 minutes

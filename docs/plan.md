@@ -212,7 +212,7 @@ moment the product becomes a _friend_.
 
 **Exit:** Child can ask Cloud to draw her ideas.
 
-### Phase 5 — Engagement & customization _(retention)_
+### Phase 5 — Engagement & customization ✅ _(retention)_
 
 - **Story-game mode**: turn-taking; Cloud opens with a premise; each reply advances
   the story. Persisted as a `story` session in Dexie, resumable.

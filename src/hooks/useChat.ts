@@ -5,6 +5,7 @@ import { selectContextWindow } from '@/lib/memory/context';
 import { extractFactsFromMessages } from '@/lib/memory/extract';
 import { markFactsUsed, upsertFacts } from '@/lib/memory/store';
 import { rankFacts } from '@/lib/memory/rank';
+import { markRecallUsed, maybeChooseRecallCue } from '@/lib/memory/recall';
 import {
   buildSystemPrompt,
   isInputSafe,
@@ -228,11 +229,15 @@ async function runTurn(
   const ranked = rankFacts(allFacts);
   const { system, injectedFacts } = buildSystemPrompt(settings, ranked);
   const storyPrompt = story?.active ? buildStoryPrompt(story) : '';
+  const recallCue = await maybeChooseRecallCue(ranked);
+  const systemParts = [system, storyPrompt, recallCue?.instruction].filter(
+    Boolean,
+  );
 
   const turns: ChatTurn[] = [
     {
       role: 'system',
-      content: storyPrompt ? `${system}\n\n${storyPrompt}` : system,
+      content: systemParts.join('\n\n'),
     },
     ...included.map((m) => ({ role: m.role, content: m.content }) as ChatTurn),
   ];
@@ -266,6 +271,7 @@ async function runTurn(
   });
 
   if (injectedFacts.length > 0) await markFactsUsed(injectedFacts);
+  if (recallCue) await markRecallUsed();
   if (story?.active) await incrementStoryTurns();
 
   return { emotion: finalEmotion, imagePrompt: parsed.prompt };
