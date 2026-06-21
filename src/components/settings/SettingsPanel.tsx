@@ -3,6 +3,7 @@ import type { Settings, SettingsInput } from '@/types/db';
 import { KOKORO_VOICES } from '@/lib/providers/tts/kokoro';
 import { useFacts } from '@/lib/storage/hooks';
 import { deleteFact, clearAllFacts } from '@/lib/memory/store';
+import { useStickers } from '@/hooks/useStickers';
 import {
   Checkbox,
   NumberField,
@@ -23,6 +24,7 @@ export default function SettingsPanel({ settings, onSave, onClose }: Props) {
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const facts = useFacts();
+  const stickers = useStickers();
 
   useEffect(() => {
     setDraft(settings);
@@ -427,6 +429,38 @@ export default function SettingsPanel({ settings, onSave, onClose }: Props) {
                 Forget everything
               </button>
             )}
+          </section>
+
+          <section className={styles.section}>
+            <h3>
+              Sticker album ({stickers.earned.length}/{stickers.catalog.length})
+            </h3>
+            <div className={styles.stickerGrid}>
+              {stickers.catalog.map((sticker) => {
+                const earned = stickers.earnedIds.has(sticker.id);
+                return (
+                  <div
+                    key={sticker.id}
+                    className={`${styles.stickerCard} ${earned ? styles.earnedSticker : ''}`}
+                    title={sticker.description}
+                  >
+                    <div className={styles.stickerEmoji}>{sticker.emoji}</div>
+                    <div className={styles.stickerLabel}>{sticker.label}</div>
+                    <div className={styles.stickerDesc}>
+                      {earned ? sticker.description : 'Not earned yet'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {stickers.earned.length > 0 ? (
+              <button
+                className={styles.danger}
+                onClick={() => void stickers.clear()}
+              >
+                Clear stickers
+              </button>
+            ) : null}
           </section>
         </div>
 

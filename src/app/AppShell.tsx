@@ -8,6 +8,7 @@ import { useStoryMode } from '@/hooks/useStoryMode';
 import { db, DEFAULT_SETTINGS } from '@/lib/storage/db';
 import { saveSettings } from '@/lib/storage/hooks';
 import { openingStoryMessage } from '@/lib/story/prompt';
+import { awardSticker } from '@/lib/stickers/store';
 import styles from './AppShell.module.css';
 
 function makeId(): string {
@@ -55,6 +56,7 @@ export default function AppShell() {
 
   async function handleStartStory(title: string) {
     await story.start(title);
+    void awardSticker('first-story');
     await db.messages.put({
       id: makeId(),
       role: 'assistant',

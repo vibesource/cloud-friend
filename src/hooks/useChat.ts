@@ -15,6 +15,7 @@ import { parseImageMarker, stripImageMarkerDraft } from '@/lib/image/marker';
 import { streamChat, type ChatTurn } from '@/lib/llm/stream';
 import { buildStoryPrompt } from '@/lib/story/prompt';
 import { incrementStoryTurns, type StoryState } from '@/lib/story/state';
+import { awardSticker } from '@/lib/stickers/store';
 import type { Emotion, Message, Settings } from '@/types/db';
 
 function newId(): string {
@@ -134,6 +135,7 @@ export function useChat(story?: StoryState): UseChatResult {
       };
 
       await db.messages.bulkPut([userMsg, cloudMsg]);
+      void awardSticker('first-chat');
 
       try {
         const result = await runTurn({

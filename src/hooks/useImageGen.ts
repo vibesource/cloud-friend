@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/storage/db';
 import { applyConfig, getImageProvider } from '@/lib/providers/image/registry';
 import { wrapImagePrompt } from '@/lib/safety/image';
+import { awardSticker } from '@/lib/stickers/store';
 import { storeImage } from '@/hooks/useImageUrl';
 import type { Settings } from '@/types/db';
 
@@ -76,6 +77,7 @@ export function useImageGen(settings: Settings | undefined): UseImageGenResult {
           signal: controller.signal,
         });
         const imageId = await storeImage(rawPrompt, blob);
+        void awardSticker('first-image');
         // Attach to the assistant message that triggered the request.
         await db.messages.update(messageId, { imageId });
       } catch (err) {

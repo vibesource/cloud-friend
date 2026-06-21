@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getSTTProvider } from '@/lib/providers/stt/registry';
 import { applyConfig, getTTSProvider } from '@/lib/providers/tts/registry';
 import { DEFAULT_SETTINGS } from '@/lib/storage/db';
+import { awardSticker } from '@/lib/stickers/store';
 import type { STTConfig, Settings } from '@/types/db';
 
 interface UseVoiceResult {
@@ -55,7 +56,10 @@ export function useVoice(settings: Settings | undefined): UseVoiceResult {
 
       await provider.speak(text, {
         signal: controller.signal,
-        onStart: () => setSpeakingMessageId(messageId),
+        onStart: () => {
+          setSpeakingMessageId(messageId);
+          void awardSticker('first-voice');
+        },
         onEnd: () => setSpeakingMessageId(null),
         onError: (err) => {
           setError(err.message);

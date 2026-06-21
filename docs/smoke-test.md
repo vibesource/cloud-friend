@@ -172,3 +172,12 @@ Run after the Phase 1–3 checks, with a Huggingface token in Settings.
 - [ ] Ordinary chat while active stays in story-game style
 - [ ] Tap End story → badge disappears and Cloud posts a wrap-up message
 - [ ] Refresh while story mode is active → active title persists
+
+## Phase 5 — stickers
+
+- [ ] Send first chat message → Settings → Sticker album shows First Hello earned
+- [ ] Generate first image → Tiny Artist earned
+- [ ] Start first story → Story Spark earned
+- [ ] Tap speaker on a Cloud reply → Cloud Speaks earned
+- [ ] Refresh page → earned stickers persist
+- [ ] Clear stickers → album returns to unearned state
