@@ -79,7 +79,7 @@ export default function ChatView({
       >
         <CloudAvatar
           emotion={emotion}
-          size={120}
+          size={180}
           onAvatarClick={onAvatarClick}
           earColor={cloud.earColor}
           cloudColor={cloud.cloudColor}

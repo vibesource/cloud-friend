@@ -27,8 +27,8 @@
   left: 50%;
   top: 0.5rem;
   transform: translateX(-50%);
-  width: 140px;
-  height: 140px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   background: radial-gradient(
     circle at 50% 45%,
