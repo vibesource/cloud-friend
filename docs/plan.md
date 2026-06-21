@@ -202,7 +202,7 @@ moment the product becomes a _friend_.
 
 **Exit:** Child can talk to Cloud and hear her talk back.
 
-### Phase 4 — Image generation _(magic moment)_
+### Phase 4 — Image generation ✅ _(magic moment)_
 
 - `ImageProvider` abstraction. Default impl: HF `InferenceClient.textToImage()`.
 - Composer affordance: "draw me a…" or button → prompt confirm → image appears inline.

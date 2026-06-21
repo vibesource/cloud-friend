@@ -6,9 +6,12 @@ interface Props {
   onCancel: () => void;
   onListen?: () => Promise<string>;
   onStopListening?: () => void;
+  onGenerateImage?: (prompt: string) => void;
   streaming: boolean;
   listening?: boolean;
   transcriptPreview?: string;
+  /** True when an image is currently being generated. */
+  imageGenerating?: boolean;
   disabled?: boolean;
   placeholder?: string;
 }
@@ -18,13 +21,17 @@ export default function Composer({
   onCancel,
   onListen,
   onStopListening,
+  onGenerateImage,
   streaming,
   listening,
   transcriptPreview,
+  imageGenerating,
   disabled,
   placeholder,
 }: Props) {
   const [text, setText] = useState('');
+  const [drawingOpen, setDrawingOpen] = useState(false);
+  const [drawingPrompt, setDrawingPrompt] = useState('');
 
   function submit() {
     const trimmed = text.trim();
@@ -50,68 +57,137 @@ export default function Composer({
     }
   }
 
+  function submitDrawing() {
+    const trimmed = drawingPrompt.trim();
+    if (trimmed.length === 0 || !onGenerateImage) return;
+    onGenerateImage(trimmed);
+    setDrawingPrompt('');
+    setDrawingOpen(false);
+  }
+
+  function handleDrawingKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitDrawing();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setDrawingOpen(false);
+      setDrawingPrompt('');
+    }
+  }
+
   return (
     <div>
-      <div className={styles.composer}>
-        <textarea
-          className={styles.textarea}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={
-            listening
-              ? 'Listening…'
-              : transcriptPreview || placeholder || 'Type to Cloud…'
-          }
-          rows={1}
-          disabled={disabled}
-          aria-label="Message for Cloud"
-        />
-        {onListen ? (
-          listening ? (
+      {drawingOpen && onGenerateImage ? (
+        <div className={styles.drawingRow}>
+          <input
+            className={styles.drawingInput}
+            value={drawingPrompt}
+            onChange={(e) => setDrawingPrompt(e.target.value)}
+            onKeyDown={handleDrawingKeyDown}
+            placeholder="What should Cloud draw?"
+            autoFocus
+            disabled={disabled || imageGenerating}
+            aria-label="Image description for Cloud to draw"
+          />
+          <button
+            className={styles.sendBtn}
+            onClick={submitDrawing}
+            disabled={
+              drawingPrompt.trim().length === 0 || disabled || imageGenerating
+            }
+            aria-label="Ask Cloud to draw"
+            title="Draw!"
+          >
+            🎨
+          </button>
+          <button
+            className={styles.stopBtn}
+            onClick={() => {
+              setDrawingOpen(false);
+              setDrawingPrompt('');
+            }}
+            aria-label="Cancel drawing"
+            title="Cancel"
+          >
+            ×
+          </button>
+        </div>
+      ) : (
+        <div className={styles.composer}>
+          <textarea
+            className={styles.textarea}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              listening
+                ? 'Listening…'
+                : transcriptPreview || placeholder || 'Type to Cloud…'
+            }
+            rows={1}
+            disabled={disabled}
+            aria-label="Message for Cloud"
+          />
+          {onGenerateImage ? (
             <button
-              className={styles.micBtnListening}
-              onClick={onStopListening}
-              aria-label="Stop listening"
-              title="Stop listening"
+              className={styles.drawBtn}
+              onClick={() => setDrawingOpen(true)}
+              disabled={disabled || streaming || imageGenerating}
+              aria-label="Ask Cloud to draw a picture"
+              title="Draw a picture"
             >
-              ●
+              🎨
+            </button>
+          ) : null}
+          {onListen ? (
+            listening ? (
+              <button
+                className={styles.micBtnListening}
+                onClick={onStopListening}
+                aria-label="Stop listening"
+                title="Stop listening"
+              >
+                ●
+              </button>
+            ) : (
+              <button
+                className={styles.micBtn}
+                onClick={() => void handleListen()}
+                disabled={disabled || streaming}
+                aria-label="Talk to Cloud"
+                title="Talk to Cloud"
+              >
+                🎙
+              </button>
+            )
+          ) : null}
+          {streaming ? (
+            <button
+              className={styles.stopBtn}
+              onClick={onCancel}
+              aria-label="Stop Cloud"
+              title="Stop"
+            >
+              ■
             </button>
           ) : (
             <button
-              className={styles.micBtn}
-              onClick={() => void handleListen()}
-              disabled={disabled || streaming}
-              aria-label="Talk to Cloud"
-              title="Talk to Cloud"
+              className={styles.sendBtn}
+              onClick={submit}
+              disabled={text.trim().length === 0 || disabled}
+              aria-label="Send"
+              title="Send"
             >
-              🎙
+              ↑
             </button>
-          )
-        ) : null}
-        {streaming ? (
-          <button
-            className={styles.stopBtn}
-            onClick={onCancel}
-            aria-label="Stop Cloud"
-            title="Stop"
-          >
-            ■
-          </button>
-        ) : (
-          <button
-            className={styles.sendBtn}
-            onClick={submit}
-            disabled={text.trim().length === 0 || disabled}
-            aria-label="Send"
-            title="Send"
-          >
-            ↑
-          </button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
       <div className={styles.hint}>
-        {listening && transcriptPreview ? (
+        {imageGenerating ? (
+          <span>Cloud is drawing…</span>
+        ) : listening && transcriptPreview ? (
           <span>Heard: “{transcriptPreview}”</span>
         ) : (
           <>

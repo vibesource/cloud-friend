@@ -43,7 +43,8 @@ npm run preview             # preview the built bundle
   key are user-supplied via Settings. Two model roles: **main** (chat) and
   **utility** (memory extraction as content scrolls out of context).
 - **Image generation:** Huggingface via `@huggingface/inference`
-  `InferenceClient.textToImage()` — works browser-side, returns a `Blob`.
+  `InferenceClient.textToImage()` — works browser-side, returns a `Blob`. Keep
+  the HF SDK dynamically imported so the image-gen chunk is opt-in.
 - **Voice:** TTS supports Web Speech API and Kokoro (`kokoro-js`). Kokoro must
   stay dynamically imported (`import('kokoro-js')`) so the large model/runtime
   chunk is opt-in and only loaded when selected in Settings.

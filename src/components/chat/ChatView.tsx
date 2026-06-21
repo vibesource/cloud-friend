@@ -23,6 +23,8 @@ interface Props {
   onStopSpeaking?: () => void;
   onListen?: () => Promise<string>;
   onStopListening?: () => void;
+  imageGeneratingForMessageId?: string | null;
+  onGenerateImage?: (prompt: string) => void;
 }
 
 export default function ChatView({
@@ -42,6 +44,8 @@ export default function ChatView({
   onStopSpeaking,
   onListen,
   onStopListening,
+  imageGeneratingForMessageId,
+  onGenerateImage,
 }: Props) {
   return (
     <div className={styles.chat}>
@@ -78,6 +82,7 @@ export default function ChatView({
           speakingMessageId={speakingMessageId}
           onSpeak={onSpeak}
           onStopSpeaking={onStopSpeaking}
+          imageGeneratingForMessageId={imageGeneratingForMessageId}
         />
         <Composer
           onSend={(t) => {
@@ -87,9 +92,11 @@ export default function ChatView({
           onCancel={onCancel}
           onListen={onListen}
           onStopListening={onStopListening}
+          onGenerateImage={onGenerateImage}
           streaming={streaming}
           listening={listening}
           transcriptPreview={transcriptPreview}
+          imageGenerating={!!imageGeneratingForMessageId}
           disabled={!ready}
         />
       </div>

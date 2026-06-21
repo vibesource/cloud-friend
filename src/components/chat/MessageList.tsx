@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { Message } from '@/types/db';
+import MessageImage from './MessageImage';
 import styles from './MessageList.module.css';
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
   speakingMessageId?: string | null;
   onSpeak?: (messageId: string, text: string) => void;
   onStopSpeaking?: () => void;
+  /** Message id currently generating an image (shows placeholder). */
+  imageGeneratingForMessageId?: string | null;
 }
 
 export default function MessageList({
@@ -19,6 +22,7 @@ export default function MessageList({
   speakingMessageId,
   onSpeak,
   onStopSpeaking,
+  imageGeneratingForMessageId,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -76,6 +80,12 @@ export default function MessageList({
               ) : (
                 <span aria-label="Cloud is thinking">…</span>
               )}
+              {m.role === 'assistant' ? (
+                <MessageImage
+                  imageId={m.imageId}
+                  generating={imageGeneratingForMessageId === m.id}
+                />
+              ) : null}
             </div>
           </div>
         );

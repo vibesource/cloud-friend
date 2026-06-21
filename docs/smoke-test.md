@@ -126,3 +126,25 @@ Run after the Phase 1/2 checks, with valid LLM settings.
 - [ ] Web Speech provider works without any model download
 - [ ] Kokoro provider only loads after tapping a speaker while Kokoro is selected
 - [ ] Changing speech recognition language persists after page refresh
+
+## Phase 4 — image generation
+
+Run after the Phase 1–3 checks, with a Huggingface token in Settings.
+
+### Explicit draw button
+
+- [ ] Settings → Huggingface has token, model, width/height fields
+- [ ] Tap the 🎨 button in the composer → inline prompt appears
+- [ ] Type a prompt and press Enter or tap 🎨 → assistant placeholder appears
+- [ ] Cloud avatar switches to thinking while generation runs
+- [ ] Placeholder says "Cloud is drawing…" with spinner
+- [ ] Generated image appears inline in the assistant bubble
+- [ ] Refresh the page → generated image persists (Dexie Blob storage)
+- [ ] Unsafe/blocked prompt produces a friendly refusal error and no HF request
+- [ ] Missing/invalid HF token shows a friendly Settings-oriented error
+
+### Deferred automation
+
+- [ ] Structured `{{IMG:...}}` marker parsing is not shipped yet. The explicit
+      draw button is the validated vertical slice; marker automation is the next
+      Phase 4 follow-up.
