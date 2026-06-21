@@ -84,6 +84,19 @@ export interface STTConfig {
   lang: string;
 }
 
+export interface CloudCustomization {
+  /** Kid-facing character name shown in the UI. */
+  displayName: string;
+  /** Cat ear fill color. */
+  earColor: string;
+  /** Main cloud body color. */
+  cloudColor: string;
+  /** Soft radial backdrop color behind Cloud. */
+  backdropColor: string;
+  /** Enables caticorn horn. */
+  hornEnabled: boolean;
+}
+
 export interface Settings {
   id: 'singleton';
   llm: LLMConfig;
@@ -94,6 +107,7 @@ export interface Settings {
   safety: SafetyConfig;
   tts: TTSConfig;
   stt: STTConfig;
+  cloud: CloudCustomization;
   updatedAt: number;
 }
 

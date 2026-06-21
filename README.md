@@ -4,9 +4,10 @@ A browser-only AI friend for kids. Cloud is a cat riding a floating cloud — sh
 remembers what your child tells her, reacts with cute animations, can talk and
 listen, and can draw pictures on request.
 
-**Status:** Phase 4 complete — chat, memory, settings, emotions, voice,
-explicit image generation, and structured auto-image requests work end-to-end.
-Engagement extras land in later phases. See `docs/plan.md` for the full roadmap.
+**Status:** Phase 5 started — chat, memory, settings, emotions, voice, image
+generation, structured auto-image requests, and customizable Cloud visuals work
+end-to-end. Story mode and stickers land later. See `docs/plan.md` for the full
+roadmap.
 
 ## Quick start
 

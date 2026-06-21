@@ -4,7 +4,7 @@ import SettingsPanel from '@/components/settings/SettingsPanel';
 import { useChat } from '@/hooks/useChat';
 import { useVoice } from '@/hooks/useVoice';
 import { useImageGen } from '@/hooks/useImageGen';
-import { db } from '@/lib/storage/db';
+import { db, DEFAULT_SETTINGS } from '@/lib/storage/db';
 import { saveSettings } from '@/lib/storage/hooks';
 import styles from './AppShell.module.css';
 
@@ -90,6 +90,7 @@ export default function AppShell() {
           onStopListening={voice.stopListening}
           imageGeneratingForMessageId={imageGen.generatingForMessageId}
           onGenerateImage={(prompt) => void handleGenerateImage(prompt)}
+          cloud={chat.settings?.cloud ?? DEFAULT_SETTINGS.cloud}
         />
       </main>
 

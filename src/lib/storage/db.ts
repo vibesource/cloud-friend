@@ -63,6 +63,13 @@ export const DEFAULT_SETTINGS: Settings = {
     provider: 'web-speech',
     lang: 'en-US',
   },
+  cloud: {
+    displayName: 'Cloud',
+    earColor: '#ffd6e0',
+    cloudColor: '#f3f8ff',
+    backdropColor: '#bde0fe',
+    hornEnabled: true,
+  },
   updatedAt: 0,
 };
 
@@ -131,6 +138,28 @@ export class CloudDB extends Dexie {
           });
         }
       });
+
+    // v4: add Cloud visual customization. Seed defaults for existing users.
+    this.version(4)
+      .stores({
+        messages: 'id, role, ts',
+        facts: 'id, kind, ts, lastUsed, confidence',
+        images: 'id, ts',
+        meta: 'key',
+        settings: 'id',
+      })
+      .upgrade(async (tx) => {
+        const row = (await tx.table('settings').get('singleton')) as
+          | (Settings & { cloud?: unknown })
+          | undefined;
+        if (row && !row.cloud) {
+          await tx.table('settings').put({
+            ...row,
+            cloud: DEFAULT_SETTINGS.cloud,
+            updatedAt: Date.now(),
+          });
+        }
+      });
   }
 }
 
@@ -164,6 +193,7 @@ export function normalizeSettings(settings: Settings): Settings {
     safety: { ...DEFAULT_SETTINGS.safety, ...(settings.safety ?? {}) },
     tts: { ...DEFAULT_SETTINGS.tts, ...(settings.tts ?? {}) },
     stt: { ...DEFAULT_SETTINGS.stt, ...(settings.stt ?? {}) },
+    cloud: { ...DEFAULT_SETTINGS.cloud, ...(settings.cloud ?? {}) },
   };
 }
 
@@ -221,6 +251,7 @@ export async function updateSettings(input: SettingsInput): Promise<Settings> {
     safety: { ...current.safety, ...(input.safety ?? {}) },
     tts: { ...current.tts, ...(input.tts ?? {}) },
     stt: { ...current.stt, ...(input.stt ?? {}) },
+    cloud: { ...current.cloud, ...(input.cloud ?? {}) },
     updatedAt: Date.now(),
   };
   await db.settings.put(merged);

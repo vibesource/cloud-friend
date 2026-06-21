@@ -152,3 +152,13 @@ Run after the Phase 1–3 checks, with a Huggingface token in Settings.
 - [ ] Refresh the page → generated image persists
 - [ ] Type an ordinary message like "how was your day?" → no image is generated
 - [ ] If Cloud emits only a marker, UI falls back to "I'll draw that for you! ✨"
+
+## Phase 5 — customizable Cloud
+
+- [ ] Open Settings → Cloud's look
+- [ ] Change Display name → Save → avatar title updates immediately
+- [ ] Toggle Caticorn horn → Save → horn appears/disappears
+- [ ] Change Ear color → Save → both ears update
+- [ ] Change Cloud color → Save → cloud body updates but remains readable
+- [ ] Change Backdrop color → Save → soft circle behind Cloud updates
+- [ ] Refresh the page → all customizations persist

@@ -86,6 +86,60 @@ export default function SettingsPanel({ settings, onSave, onClose }: Props) {
           </section>
 
           <section className={styles.section}>
+            <h3>Cloud&apos;s look</h3>
+            <TextField
+              label="Display name"
+              hint="Shown above the avatar."
+              value={draft.cloud.displayName}
+              onChange={(e) =>
+                patch({
+                  cloud: { ...draft.cloud, displayName: e.target.value },
+                })
+              }
+            />
+            <Checkbox
+              label="Caticorn horn"
+              checked={draft.cloud.hornEnabled}
+              onChange={(e) =>
+                patch({
+                  cloud: { ...draft.cloud, hornEnabled: e.target.checked },
+                })
+              }
+            />
+            <div className={styles.row2}>
+              <TextField
+                label="Ear color"
+                type="color"
+                value={draft.cloud.earColor}
+                onChange={(e) =>
+                  patch({ cloud: { ...draft.cloud, earColor: e.target.value } })
+                }
+              />
+              <TextField
+                label="Cloud color"
+                type="color"
+                value={draft.cloud.cloudColor}
+                onChange={(e) =>
+                  patch({
+                    cloud: { ...draft.cloud, cloudColor: e.target.value },
+                  })
+                }
+              />
+            </div>
+            <TextField
+              label="Backdrop color"
+              type="color"
+              hint="The soft circle behind Cloud."
+              value={draft.cloud.backdropColor}
+              onChange={(e) =>
+                patch({
+                  cloud: { ...draft.cloud, backdropColor: e.target.value },
+                })
+              }
+            />
+          </section>
+
+          <section className={styles.section}>
             <h3>AI chat (OpenAI-compatible)</h3>
             <TextField
               label="Base URL"

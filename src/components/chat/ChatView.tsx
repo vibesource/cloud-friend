@@ -1,4 +1,5 @@
-import type { Emotion } from '@/types/db';
+import type { CSSProperties } from 'react';
+import type { CloudCustomization, Emotion } from '@/types/db';
 import CloudAvatar from '@/components/cloud-avatar/CloudAvatar';
 import Composer from './Composer';
 import MessageList from './MessageList';
@@ -25,6 +26,7 @@ interface Props {
   onStopListening?: () => void;
   imageGeneratingForMessageId?: string | null;
   onGenerateImage?: (prompt: string) => void;
+  cloud: CloudCustomization;
 }
 
 export default function ChatView({
@@ -46,16 +48,25 @@ export default function ChatView({
   onStopListening,
   imageGeneratingForMessageId,
   onGenerateImage,
+  cloud,
 }: Props) {
   return (
     <div className={styles.chat}>
-      <header className={styles.banner}>
+      <header
+        className={styles.banner}
+        style={
+          { '--cloud-avatar-backdrop': cloud.backdropColor } as CSSProperties
+        }
+      >
         <CloudAvatar
           emotion={emotion}
           size={120}
           onAvatarClick={onAvatarClick}
+          earColor={cloud.earColor}
+          cloudColor={cloud.cloudColor}
+          hornEnabled={cloud.hornEnabled}
         />
-        <h2>Cloud</h2>
+        <h2>{cloud.displayName || 'Cloud'}</h2>
         <div className={styles.status}>
           {streaming
             ? 'Cloud is typing…'

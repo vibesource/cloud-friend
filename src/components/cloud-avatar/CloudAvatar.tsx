@@ -8,10 +8,12 @@ interface Props {
   onAvatarClick?: () => void;
   /** Customize Cloud later (Phase 5). Defaults reflect current Phase 1 Cloud. */
   earColor?: string;
+  cloudColor?: string;
   hornEnabled?: boolean;
 }
 
 const EAR_DEFAULT = '#ffd6e0';
+const CLOUD_DEFAULT = '#f3f8ff';
 const HORN_DEFAULT = '#ffe08a';
 
 export default function CloudAvatar({
@@ -19,6 +21,7 @@ export default function CloudAvatar({
   size = 140,
   onAvatarClick,
   earColor = EAR_DEFAULT,
+  cloudColor = CLOUD_DEFAULT,
   hornEnabled = false,
 }: Props) {
   const cheeks = emotion === 'blush';
@@ -81,7 +84,7 @@ export default function CloudAvatar({
             cy="78"
             rx="46"
             ry="22"
-            fill="#f3f8ff"
+            fill={cloudColor}
             stroke="#d8e6f7"
             strokeWidth="1"
           />
@@ -90,7 +93,7 @@ export default function CloudAvatar({
             cy="62"
             rx="18"
             ry="16"
-            fill="#f3f8ff"
+            fill={cloudColor}
             stroke="#d8e6f7"
             strokeWidth="1"
           />
@@ -99,7 +102,7 @@ export default function CloudAvatar({
             cy="52"
             rx="22"
             ry="20"
-            fill="#f3f8ff"
+            fill={cloudColor}
             stroke="#d8e6f7"
             strokeWidth="1"
           />
@@ -108,7 +111,7 @@ export default function CloudAvatar({
             cy="62"
             rx="20"
             ry="17"
-            fill="#f3f8ff"
+            fill={cloudColor}
             stroke="#d8e6f7"
             strokeWidth="1"
           />

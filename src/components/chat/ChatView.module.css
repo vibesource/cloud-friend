@@ -32,7 +32,7 @@
   border-radius: 50%;
   background: radial-gradient(
     circle at 50% 45%,
-    rgba(189, 224, 254, 0.9) 0%,
+    color-mix(in srgb, var(--cloud-avatar-backdrop, #bde0fe) 85%, white) 0%,
     rgba(255, 175, 204, 0.35) 60%,
     rgba(255, 255, 255, 0) 100%
   );
