@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getSTTProvider } from '@/lib/providers/stt/registry';
 import { applyConfig, getTTSProvider } from '@/lib/providers/tts/registry';
 import { DEFAULT_SETTINGS } from '@/lib/storage/db';
+import { friendlyErrorMessage } from '@/lib/errors';
 import { awardSticker } from '@/lib/stickers/store';
 import type { STTConfig, Settings } from '@/types/db';
 
@@ -62,7 +63,7 @@ export function useVoice(settings: Settings | undefined): UseVoiceResult {
         },
         onEnd: () => setSpeakingMessageId(null),
         onError: (err) => {
-          setError(err.message);
+          setError(friendlyErrorMessage(err));
           setSpeakingMessageId(null);
         },
       });
@@ -88,11 +89,11 @@ export function useVoice(settings: Settings | undefined): UseVoiceResult {
     try {
       const result = await provider.listen({
         onPartial: setTranscriptPreview,
-        onError: (err) => setError(err.message),
+        onError: (err) => setError(friendlyErrorMessage(err)),
       });
       return result.text;
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(friendlyErrorMessage(err));
       return '';
     } finally {
       setListening(false);

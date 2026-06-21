@@ -3,6 +3,7 @@ import { db } from '@/lib/storage/db';
 import { applyConfig, getImageProvider } from '@/lib/providers/image/registry';
 import { wrapImagePrompt } from '@/lib/safety/image';
 import { awardSticker } from '@/lib/stickers/store';
+import { friendlyErrorMessage } from '@/lib/errors';
 import { storeImage } from '@/hooks/useImageUrl';
 import type { Settings } from '@/types/db';
 
@@ -82,7 +83,7 @@ export function useImageGen(settings: Settings | undefined): UseImageGenResult {
         await db.messages.update(messageId, { imageId });
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(friendlyErrorMessage(err));
       } finally {
         setGeneratingForMessageId(null);
         abortRef.current = null;

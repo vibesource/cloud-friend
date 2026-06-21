@@ -152,6 +152,7 @@ export default function ChatView({
           onSpeak={onSpeak}
           onStopSpeaking={onStopSpeaking}
           imageGeneratingForMessageId={imageGeneratingForMessageId}
+          onDismissError={onClearError}
         />
         <Composer
           onSend={(t) => {

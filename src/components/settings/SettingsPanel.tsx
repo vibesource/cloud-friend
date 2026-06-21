@@ -3,6 +3,11 @@ import type { Settings, SettingsInput } from '@/types/db';
 import { KOKORO_VOICES } from '@/lib/providers/tts/kokoro';
 import { useFacts } from '@/lib/storage/hooks';
 import { deleteFact, clearAllFacts } from '@/lib/memory/store';
+import {
+  clearAllData,
+  clearChat,
+  exportChatAsJson,
+} from '@/lib/storage/export';
 import { useStickers } from '@/hooks/useStickers';
 import {
   Checkbox,
@@ -365,6 +370,34 @@ export default function SettingsPanel({ settings, onSave, onClose }: Props) {
           </section>
 
           <section className={styles.section}>
+            <h3>Accessibility</h3>
+            <Checkbox
+              label="Dyslexia-friendly font"
+              checked={draft.accessibility.dyslexiaFont}
+              onChange={(e) =>
+                patch({
+                  accessibility: {
+                    ...draft.accessibility,
+                    dyslexiaFont: e.target.checked,
+                  },
+                })
+              }
+            />
+            <Checkbox
+              label="Larger text and buttons"
+              checked={draft.accessibility.largeTouch}
+              onChange={(e) =>
+                patch({
+                  accessibility: {
+                    ...draft.accessibility,
+                    largeTouch: e.target.checked,
+                  },
+                })
+              }
+            />
+          </section>
+
+          <section className={styles.section}>
             <h3>Safety</h3>
             <Checkbox
               label="Keyword backstop filter"
@@ -429,6 +462,59 @@ export default function SettingsPanel({ settings, onSave, onClose }: Props) {
                 Forget everything
               </button>
             )}
+          </section>
+
+          <section className={styles.section}>
+            <h3>Data &amp; privacy</h3>
+            <p className={styles.empty}>
+              Everything lives only in this browser. Export a copy, clear the
+              chat, or wipe everything.
+            </p>
+            <div className={styles.actions}>
+              <button
+                className={styles.danger}
+                onClick={async () => {
+                  const json = await exportChatAsJson();
+                  const blob = new Blob([json], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `cloud-chat-${new Date()
+                    .toISOString()
+                    .slice(0, 10)}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export chat (JSON)
+              </button>
+              <button
+                className={styles.danger}
+                onClick={() => {
+                  if (
+                    confirm('Clear all chat messages? This cannot be undone.')
+                  ) {
+                    void clearChat();
+                  }
+                }}
+              >
+                Clear chat
+              </button>
+              <button
+                className={styles.danger}
+                onClick={() => {
+                  if (
+                    confirm(
+                      'Wipe ALL data (chat, memories, stickers, settings)? This cannot be undone.',
+                    )
+                  ) {
+                    void clearAllData().then(() => location.reload());
+                  }
+                }}
+              >
+                Wipe everything
+              </button>
+            </div>
           </section>
 
           <section className={styles.section}>

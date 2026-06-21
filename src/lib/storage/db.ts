@@ -70,6 +70,10 @@ export const DEFAULT_SETTINGS: Settings = {
     backdropColor: '#bde0fe',
     hornEnabled: true,
   },
+  accessibility: {
+    dyslexiaFont: false,
+    largeTouch: false,
+  },
   updatedAt: 0,
 };
 
@@ -160,6 +164,28 @@ export class CloudDB extends Dexie {
           });
         }
       });
+
+    // v5: add accessibility toggles (dyslexia-friendly font, large touch targets).
+    this.version(5)
+      .stores({
+        messages: 'id, role, ts',
+        facts: 'id, kind, ts, lastUsed, confidence',
+        images: 'id, ts',
+        meta: 'key',
+        settings: 'id',
+      })
+      .upgrade(async (tx) => {
+        const row = (await tx.table('settings').get('singleton')) as
+          | (Settings & { accessibility?: unknown })
+          | undefined;
+        if (row && !row.accessibility) {
+          await tx.table('settings').put({
+            ...row,
+            accessibility: DEFAULT_SETTINGS.accessibility,
+            updatedAt: Date.now(),
+          });
+        }
+      });
   }
 }
 
@@ -194,6 +220,10 @@ export function normalizeSettings(settings: Settings): Settings {
     tts: { ...DEFAULT_SETTINGS.tts, ...(settings.tts ?? {}) },
     stt: { ...DEFAULT_SETTINGS.stt, ...(settings.stt ?? {}) },
     cloud: { ...DEFAULT_SETTINGS.cloud, ...(settings.cloud ?? {}) },
+    accessibility: {
+      ...DEFAULT_SETTINGS.accessibility,
+      ...(settings.accessibility ?? {}),
+    },
   };
 }
 
@@ -252,6 +282,10 @@ export async function updateSettings(input: SettingsInput): Promise<Settings> {
     tts: { ...current.tts, ...(input.tts ?? {}) },
     stt: { ...current.stt, ...(input.stt ?? {}) },
     cloud: { ...current.cloud, ...(input.cloud ?? {}) },
+    accessibility: {
+      ...current.accessibility,
+      ...(input.accessibility ?? {}),
+    },
     updatedAt: Date.now(),
   };
   await db.settings.put(merged);

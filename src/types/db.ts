@@ -97,6 +97,13 @@ export interface CloudCustomization {
   hornEnabled: boolean;
 }
 
+export interface AccessibilityConfig {
+  /** Use the OpenDyslexic-like stack and slightly larger letter spacing. */
+  dyslexiaFont: boolean;
+  /** Increase hit-target sizes and base font size for younger kids. */
+  largeTouch: boolean;
+}
+
 export interface Settings {
   id: 'singleton';
   llm: LLMConfig;
@@ -108,6 +115,7 @@ export interface Settings {
   tts: TTSConfig;
   stt: STTConfig;
   cloud: CloudCustomization;
+  accessibility: AccessibilityConfig;
   updatedAt: number;
 }
 

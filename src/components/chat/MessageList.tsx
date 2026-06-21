@@ -13,6 +13,7 @@ interface Props {
   onStopSpeaking?: () => void;
   /** Message id currently generating an image (shows placeholder). */
   imageGeneratingForMessageId?: string | null;
+  onDismissError?: () => void;
 }
 
 export default function MessageList({
@@ -23,6 +24,7 @@ export default function MessageList({
   onSpeak,
   onStopSpeaking,
   imageGeneratingForMessageId,
+  onDismissError,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -92,7 +94,18 @@ export default function MessageList({
       })}
       {error && (
         <div className={`${styles.row} ${styles.user}`}>
-          <div className={`${styles.bubble} ${styles.error}`}>{error}</div>
+          <div className={`${styles.bubble} ${styles.error}`}>
+            {error}
+            {onDismissError ? (
+              <button
+                className={styles.dismissBtn}
+                onClick={onDismissError}
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            ) : null}
+          </div>
         </div>
       )}
     </div>

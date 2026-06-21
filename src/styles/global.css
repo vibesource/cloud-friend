@@ -52,3 +52,31 @@ textarea,
 select {
   font-family: inherit;
 }
+
+/* Accessibility: dyslexia-friendly mode. We don't bundle OpenDyslexic (licensing
+   weight), but we use a stack that falls back to common system dyslexia-friendly
+   fonts if installed, plus helpful letter/word/line spacing. */
+.a11y-dyslexia {
+  font-family:
+    'Lexia Readable', 'OpenDyslexic', 'Comic Sans MS', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+  line-height: 1.55;
+}
+
+/* Accessibility: large touch targets for younger kids. */
+.a11y-large-touch {
+  font-size: 17px;
+}
+
+.a11y-large-touch button,
+.a11y-large-touch .textarea,
+.a11y-large-touch input,
+.a11y-large-touch select,
+.a11y-large-touch textarea {
+  min-height: 2.85rem;
+}
+
+.a11y-large-touch .bubble {
+  font-size: 1.05rem;
+}

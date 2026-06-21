@@ -225,7 +225,7 @@ moment the product becomes a _friend_.
 
 **Exit:** Cloud feels like _hers_ — personalized, remembers her life, plays with her.
 
-### Phase 6 — Polish & hardening
+### Phase 6 — Polish & hardening ✅
 
 - Theme work: kid-friendly palette, large touch targets, dyslexia-friendly font option.
 - Empty states, error states (API key wrong, network down, model unavailable).

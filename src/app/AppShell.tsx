@@ -5,6 +5,7 @@ import { useChat } from '@/hooks/useChat';
 import { useVoice } from '@/hooks/useVoice';
 import { useImageGen } from '@/hooks/useImageGen';
 import { useStoryMode } from '@/hooks/useStoryMode';
+import { useAccessibility } from '@/hooks/useAccessibility';
 import { db, DEFAULT_SETTINGS } from '@/lib/storage/db';
 import { saveSettings } from '@/lib/storage/hooks';
 import { openingStoryMessage } from '@/lib/story/prompt';
@@ -24,6 +25,7 @@ export default function AppShell() {
   const chat = useChat(story.state);
   const voice = useVoice(chat.settings);
   const imageGen = useImageGen(chat.settings);
+  useAccessibility(chat.settings?.accessibility);
   const processedImageRequestRef = useRef<string | null>(null);
   const visibleEmotion = voice.speakingMessageId
     ? 'talking'

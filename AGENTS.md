@@ -24,6 +24,8 @@ npm run lint:fix            # eslint --fix
 npm run format              # prettier --write
 npm run format:check        # prettier check (no writes)
 npm run typecheck           # tsc --noEmit
+npm run test                # vitest run (unit tests)
+npm run test:watch          # vitest watch mode
 npm run build               # tsc -b && vite build
 npm run preview             # preview the built bundle
 ```

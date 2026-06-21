@@ -93,6 +93,23 @@
   background: #ffe5e0;
   color: #b3261e;
   font-size: 0.85rem;
+  position: relative;
+  padding-right: 1.75rem;
+}
+
+.dismissBtn {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.3rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  border: none;
+  background: transparent;
+  color: #b3261e;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
 .streaming::after {

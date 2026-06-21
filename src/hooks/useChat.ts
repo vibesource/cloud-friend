@@ -17,6 +17,7 @@ import { streamChat, type ChatTurn } from '@/lib/llm/stream';
 import { buildStoryPrompt } from '@/lib/story/prompt';
 import { incrementStoryTurns, type StoryState } from '@/lib/story/state';
 import { awardSticker } from '@/lib/stickers/store';
+import { friendlyErrorMessage } from '@/lib/errors';
 import type { Emotion, Message, Settings } from '@/types/db';
 
 function newId(): string {
@@ -161,8 +162,7 @@ export function useChat(story?: StoryState): UseChatResult {
       } catch (err) {
         const aborted = err instanceof Error && err.name === 'AbortError';
         if (!aborted) {
-          const msg =
-            err instanceof Error ? err.message : 'Something went wrong.';
+          const msg = friendlyErrorMessage(err) || 'Something went wrong.';
           setError(msg);
           await db.messages.update(cloudMsg.id, {
             content: 'Hmm, I got tangled up. Try again in a moment? 🌥️',
