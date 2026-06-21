@@ -11,6 +11,7 @@ import {
   isOutputSafe,
 } from '@/lib/safety/prompt';
 import { inferEmotionFromReply, randomBoopEmotion } from '@/lib/cloud/emotion';
+import { parseImageMarker, stripImageMarkerDraft } from '@/lib/image/marker';
 import { streamChat, type ChatTurn } from '@/lib/llm/stream';
 import type { Emotion, Message, Settings } from '@/types/db';
 
@@ -34,6 +35,9 @@ interface UseChatResult {
   clearError: () => void;
   /** Trigger a brief random cute reaction (tap on Cloud). */
   boop: () => void;
+  /** Last structured image request emitted by Cloud, consumed by AppShell. */
+  pendingImageRequest: { messageId: string; prompt: string } | null;
+  clearPendingImageRequest: () => void;
 }
 
 export function useChat(): UseChatResult {
@@ -42,6 +46,10 @@ export function useChat(): UseChatResult {
   const [streaming, setStreaming] = useState(false);
   const [cloudEmotion, setCloudEmotion] = useState<Emotion>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [pendingImageRequest, setPendingImageRequest] = useState<{
+    messageId: string;
+    prompt: string;
+  } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const boopTimerRef = useRef<number | null>(null);
   const emotionBeforeBoopRef = useRef<Emotion | null>(null);
@@ -138,6 +146,12 @@ export function useChat(): UseChatResult {
           },
         });
         setCloudEmotion(result.emotion);
+        if (result.imagePrompt) {
+          setPendingImageRequest({
+            messageId: cloudMsg.id,
+            prompt: result.imagePrompt,
+          });
+        }
       } catch (err) {
         const aborted = err instanceof Error && err.name === 'AbortError';
         if (!aborted) {
@@ -169,6 +183,8 @@ export function useChat(): UseChatResult {
     cancel,
     clearError,
     boop,
+    pendingImageRequest,
+    clearPendingImageRequest: () => setPendingImageRequest(null),
   };
 }
 
@@ -181,7 +197,9 @@ interface RunTurnArgs {
   onPartial: (partial: string) => void;
 }
 
-async function runTurn(args: RunTurnArgs): Promise<{ emotion: Emotion }> {
+async function runTurn(
+  args: RunTurnArgs,
+): Promise<{ emotion: Emotion; imagePrompt: string | null }> {
   const { priorMessages, settings, userMsg, cloudMsg, signal, onPartial } =
     args;
 
@@ -218,20 +236,25 @@ async function runTurn(args: RunTurnArgs): Promise<{ emotion: Emotion }> {
 
   for await (const chunk of stream) {
     accumulated += chunk;
-    onPartial(accumulated);
+    onPartial(stripImageMarkerDraft(accumulated));
   }
+
+  const parsed = parseImageMarker(accumulated);
+  const visibleContent =
+    parsed.content ||
+    (parsed.prompt ? "I'll draw that for you! ✨" : accumulated);
 
   // If the reply tripped the safety backstop, Cloud looks apologetic
   // regardless of the inferred emotion — it signals something's off.
-  const finalEmotion: Emotion = isOutputSafe(accumulated, settings)
-    ? inferEmotionFromReply(accumulated)
+  const finalEmotion: Emotion = isOutputSafe(visibleContent, settings)
+    ? inferEmotionFromReply(visibleContent)
     : 'sad';
   await db.messages.update(cloudMsg.id, {
-    content: accumulated,
+    content: visibleContent,
     emotion: finalEmotion,
   });
 
   if (injectedFacts.length > 0) await markFactsUsed(injectedFacts);
 
-  return { emotion: finalEmotion };
+  return { emotion: finalEmotion, imagePrompt: parsed.prompt };
 }

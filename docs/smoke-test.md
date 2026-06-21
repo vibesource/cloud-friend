@@ -143,8 +143,12 @@ Run after the Phase 1–3 checks, with a Huggingface token in Settings.
 - [ ] Unsafe/blocked prompt produces a friendly refusal error and no HF request
 - [ ] Missing/invalid HF token shows a friendly Settings-oriented error
 
-### Deferred automation
+### Structured automation
 
-- [ ] Structured `{{IMG:...}}` marker parsing is not shipped yet. The explicit
-      draw button is the validated vertical slice; marker automation is the next
-      Phase 4 follow-up.
+- [ ] Type: "draw me a cute rainbow cat on a cloud"
+- [ ] Cloud replies normally; raw `{{IMG:...}}` syntax never appears in the bubble
+- [ ] The assistant bubble shows a drawing placeholder after Cloud's text
+- [ ] Generated image attaches to the same assistant bubble
+- [ ] Refresh the page → generated image persists
+- [ ] Type an ordinary message like "how was your day?" → no image is generated
+- [ ] If Cloud emits only a marker, UI falls back to "I'll draw that for you! ✨"

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ChatView from '@/components/chat/ChatView';
 import SettingsPanel from '@/components/settings/SettingsPanel';
 import { useChat } from '@/hooks/useChat';
@@ -20,11 +20,21 @@ export default function AppShell() {
   const chat = useChat();
   const voice = useVoice(chat.settings);
   const imageGen = useImageGen(chat.settings);
+  const processedImageRequestRef = useRef<string | null>(null);
   const visibleEmotion = voice.speakingMessageId
     ? 'talking'
     : imageGen.generatingForMessageId
       ? 'thinking'
       : chat.cloudEmotion;
+
+  useEffect(() => {
+    const req = chat.pendingImageRequest;
+    if (!req) return;
+    if (processedImageRequestRef.current === req.messageId) return;
+    processedImageRequestRef.current = req.messageId;
+    chat.clearPendingImageRequest();
+    void imageGen.generateForMessage(req.messageId, req.prompt);
+  }, [chat, imageGen]);
 
   async function handleGenerateImage(prompt: string) {
     // Insert a placeholder assistant message, then kick off generation.
