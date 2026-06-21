@@ -58,6 +58,17 @@ export function useChat(story?: StoryState): UseChatResult {
   const abortRef = useRef<AbortController | null>(null);
   const boopTimerRef = useRef<number | null>(null);
   const emotionBeforeBoopRef = useRef<Emotion | null>(null);
+  const idleTimerRef = useRef<number | null>(null);
+
+  const scheduleIdleReset = useCallback((delay = 8000) => {
+    if (idleTimerRef.current !== null) {
+      window.clearTimeout(idleTimerRef.current);
+    }
+    idleTimerRef.current = window.setTimeout(() => {
+      setCloudEmotion('idle');
+      idleTimerRef.current = null;
+    }, delay);
+  }, []);
 
   const ready =
     !!settings &&
@@ -70,6 +81,10 @@ export function useChat(story?: StoryState): UseChatResult {
     abortRef.current = null;
     setStreaming(false);
     setCloudEmotion('idle');
+    if (idleTimerRef.current !== null) {
+      window.clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
   }, []);
 
   const clearError = useCallback(() => setError(null), []);
@@ -88,13 +103,17 @@ export function useChat(story?: StoryState): UseChatResult {
       setCloudEmotion(emotionBeforeBoopRef.current ?? 'idle');
       emotionBeforeBoopRef.current = null;
       boopTimerRef.current = null;
+      scheduleIdleReset();
     }, 1400);
-  }, [streaming, cloudEmotion]);
+  }, [streaming, cloudEmotion, scheduleIdleReset]);
 
   useEffect(() => {
     return () => {
       if (boopTimerRef.current !== null) {
         window.clearTimeout(boopTimerRef.current);
+      }
+      if (idleTimerRef.current !== null) {
+        window.clearTimeout(idleTimerRef.current);
       }
     };
   }, []);
@@ -117,9 +136,13 @@ export function useChat(story?: StoryState): UseChatResult {
 
       const controller = new AbortController();
       abortRef.current = controller;
-      setError(null);
-      setStreaming(true);
-      setCloudEmotion('thinking');
+    setError(null);
+    setStreaming(true);
+    setCloudEmotion('thinking');
+    if (idleTimerRef.current !== null) {
+      window.clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
 
       const now = Date.now();
       const userMsg: Message = {
@@ -153,6 +176,7 @@ export function useChat(story?: StoryState): UseChatResult {
           },
         });
         setCloudEmotion(result.emotion);
+        scheduleIdleReset();
         if (result.imagePrompt) {
           setPendingImageRequest({
             messageId: cloudMsg.id,
@@ -169,13 +193,14 @@ export function useChat(story?: StoryState): UseChatResult {
             emotion: 'sad',
           });
           setCloudEmotion('sad');
+          scheduleIdleReset(12000);
         }
       } finally {
         setStreaming(false);
         abortRef.current = null;
       }
     },
-    [messages, settings, story],
+    [messages, settings, story, scheduleIdleReset],
   );
 
   return {

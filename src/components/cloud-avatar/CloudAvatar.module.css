@@ -23,8 +23,12 @@
   transform-origin: center;
 }
 
-.face {
+.cat-body {
   animation: bob 3.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.face {
   transform-origin: center;
 }
 
@@ -49,7 +53,7 @@
 }
 
 /* While Cloud is talking, her face bobs a bit faster — like she's chattering */
-.talking .face {
+.talking .cat-body {
   animation: chatter 0.45s ease-in-out infinite;
 }
 
@@ -204,7 +208,7 @@
 /* Thinking — small puff orbits Cloud */
 .thinking-dot {
   animation: orbit 2.5s linear infinite;
-  transform-origin: 60px 56px;
+  transform-origin: 56px 46px;
 }
 
 @keyframes orbit {
@@ -236,8 +240,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .cloud-body,
-  .face,
-  .talking .face,
+  .cat-body,
+  .talking .cat-body,
   .sad .cloud-body,
   .sparkle,
   .raindrop,
