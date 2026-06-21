@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { CloudCustomization, Emotion } from '@/types/db';
 import CloudAvatar from '@/components/cloud-avatar/CloudAvatar';
 import Composer from './Composer';
@@ -27,6 +27,10 @@ interface Props {
   imageGeneratingForMessageId?: string | null;
   onGenerateImage?: (prompt: string) => void;
   cloud: CloudCustomization;
+  storyActive?: boolean;
+  storyTitle?: string;
+  onStartStory?: (title: string) => void;
+  onEndStory?: () => void;
 }
 
 export default function ChatView({
@@ -49,7 +53,22 @@ export default function ChatView({
   imageGeneratingForMessageId,
   onGenerateImage,
   cloud,
+  storyActive,
+  storyTitle,
+  onStartStory,
+  onEndStory,
 }: Props) {
+  const [storyDraftOpen, setStoryDraftOpen] = useState(false);
+  const [storyDraftTitle, setStoryDraftTitle] = useState(
+    'Cloud and the Sparkly Map',
+  );
+
+  function submitStoryStart() {
+    const title = storyDraftTitle.trim() || 'Cloud Story';
+    onStartStory?.(title);
+    setStoryDraftOpen(false);
+  }
+
   return (
     <div className={styles.chat}>
       <header
@@ -77,6 +96,45 @@ export default function ChatView({
                 : ready
                   ? 'Cloud is here — tap to boop her!'
                   : 'Almost ready…'}
+        </div>
+        <div className={styles.storyControls}>
+          {storyActive ? (
+            <>
+              <span className={styles.storyBadge}>Story: {storyTitle}</span>
+              <button className={styles.storyBtn} onClick={onEndStory}>
+                End story
+              </button>
+            </>
+          ) : storyDraftOpen ? (
+            <div className={styles.storyStartRow}>
+              <input
+                value={storyDraftTitle}
+                onChange={(e) => setStoryDraftTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') submitStoryStart();
+                  if (e.key === 'Escape') setStoryDraftOpen(false);
+                }}
+                aria-label="Story title"
+                autoFocus
+              />
+              <button className={styles.storyBtn} onClick={submitStoryStart}>
+                Start
+              </button>
+              <button
+                className={styles.storyBtnGhost}
+                onClick={() => setStoryDraftOpen(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              className={styles.storyBtn}
+              onClick={() => setStoryDraftOpen(true)}
+            >
+              Story mode
+            </button>
+          )}
         </div>
         {!ready && (
           <div className={styles.warning}>

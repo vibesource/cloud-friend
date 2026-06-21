@@ -162,3 +162,13 @@ Run after the Phase 1–3 checks, with a Huggingface token in Settings.
 - [ ] Change Cloud color → Save → cloud body updates but remains readable
 - [ ] Change Backdrop color → Save → soft circle behind Cloud updates
 - [ ] Refresh the page → all customizations persist
+
+## Phase 5 — story mode
+
+- [ ] Tap Story mode in the chat banner
+- [ ] Enter a title and Start → Cloud posts a story opening
+- [ ] Story badge appears with the active title
+- [ ] Send a story continuation → Cloud replies with 2–4 story sentences and a prompt
+- [ ] Ordinary chat while active stays in story-game style
+- [ ] Tap End story → badge disappears and Cloud posts a wrap-up message
+- [ ] Refresh while story mode is active → active title persists

@@ -4,8 +4,10 @@ import SettingsPanel from '@/components/settings/SettingsPanel';
 import { useChat } from '@/hooks/useChat';
 import { useVoice } from '@/hooks/useVoice';
 import { useImageGen } from '@/hooks/useImageGen';
+import { useStoryMode } from '@/hooks/useStoryMode';
 import { db, DEFAULT_SETTINGS } from '@/lib/storage/db';
 import { saveSettings } from '@/lib/storage/hooks';
+import { openingStoryMessage } from '@/lib/story/prompt';
 import styles from './AppShell.module.css';
 
 function makeId(): string {
@@ -17,7 +19,8 @@ function makeId(): string {
 
 export default function AppShell() {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const chat = useChat();
+  const story = useStoryMode();
+  const chat = useChat(story.state);
   const voice = useVoice(chat.settings);
   const imageGen = useImageGen(chat.settings);
   const processedImageRequestRef = useRef<string | null>(null);
@@ -48,6 +51,29 @@ export default function AppShell() {
       ts: Date.now(),
     });
     await imageGen.generateForMessage(placeholderId, prompt);
+  }
+
+  async function handleStartStory(title: string) {
+    await story.start(title);
+    await db.messages.put({
+      id: makeId(),
+      role: 'assistant',
+      content: openingStoryMessage(title),
+      emotion: 'happy',
+      ts: Date.now(),
+    });
+  }
+
+  async function handleEndStory() {
+    await story.end();
+    await db.messages.put({
+      id: makeId(),
+      role: 'assistant',
+      content:
+        'Story mode is tucked away for now. We can continue it another time! ✨',
+      emotion: 'happy',
+      ts: Date.now(),
+    });
   }
 
   return (
@@ -91,6 +117,10 @@ export default function AppShell() {
           imageGeneratingForMessageId={imageGen.generatingForMessageId}
           onGenerateImage={(prompt) => void handleGenerateImage(prompt)}
           cloud={chat.settings?.cloud ?? DEFAULT_SETTINGS.cloud}
+          storyActive={story.state.active}
+          storyTitle={story.state.title}
+          onStartStory={(title) => void handleStartStory(title)}
+          onEndStory={() => void handleEndStory()}
         />
       </main>
 

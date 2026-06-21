@@ -66,6 +66,62 @@
   display: inline-block;
 }
 
+.storyControls {
+  margin-top: 0.45rem;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.storyBtn,
+.storyBtnGhost {
+  border: none;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.storyBtn {
+  background: var(--cloud-accent);
+  color: white;
+  font-weight: 700;
+}
+
+.storyBtnGhost {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--cloud-fg);
+}
+
+.storyBadge {
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+}
+
+.storyStartRow {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
+}
+
+.storyStartRow input {
+  width: min(260px, 52vw);
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--cloud-input-border);
+  background: white;
+  color: var(--cloud-fg);
+  font: inherit;
+  font-size: 0.78rem;
+}
+
 .body {
   flex: 1;
   min-height: 0;

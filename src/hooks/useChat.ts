@@ -13,6 +13,8 @@ import {
 import { inferEmotionFromReply, randomBoopEmotion } from '@/lib/cloud/emotion';
 import { parseImageMarker, stripImageMarkerDraft } from '@/lib/image/marker';
 import { streamChat, type ChatTurn } from '@/lib/llm/stream';
+import { buildStoryPrompt } from '@/lib/story/prompt';
+import { incrementStoryTurns, type StoryState } from '@/lib/story/state';
 import type { Emotion, Message, Settings } from '@/types/db';
 
 function newId(): string {
@@ -40,7 +42,7 @@ interface UseChatResult {
   clearPendingImageRequest: () => void;
 }
 
-export function useChat(): UseChatResult {
+export function useChat(story?: StoryState): UseChatResult {
   const messages = useMessages();
   const settings = useSettings();
   const [streaming, setStreaming] = useState(false);
@@ -137,6 +139,7 @@ export function useChat(): UseChatResult {
         const result = await runTurn({
           priorMessages: messages,
           settings,
+          story,
           userMsg,
           cloudMsg,
           signal: controller.signal,
@@ -169,7 +172,7 @@ export function useChat(): UseChatResult {
         abortRef.current = null;
       }
     },
-    [messages, settings],
+    [messages, settings, story],
   );
 
   return {
@@ -191,6 +194,7 @@ export function useChat(): UseChatResult {
 interface RunTurnArgs {
   priorMessages: Message[];
   settings: Settings;
+  story?: StoryState;
   userMsg: Message;
   cloudMsg: Message;
   signal: AbortSignal;
@@ -202,6 +206,7 @@ async function runTurn(
 ): Promise<{ emotion: Emotion; imagePrompt: string | null }> {
   const { priorMessages, settings, userMsg, cloudMsg, signal, onPartial } =
     args;
+  const story = args.story;
 
   const all = [...priorMessages, userMsg];
   const { included, evicted } = selectContextWindow(
@@ -220,9 +225,13 @@ async function runTurn(
   const allFacts = await db.facts.toArray();
   const ranked = rankFacts(allFacts);
   const { system, injectedFacts } = buildSystemPrompt(settings, ranked);
+  const storyPrompt = story?.active ? buildStoryPrompt(story) : '';
 
   const turns: ChatTurn[] = [
-    { role: 'system', content: system },
+    {
+      role: 'system',
+      content: storyPrompt ? `${system}\n\n${storyPrompt}` : system,
+    },
     ...included.map((m) => ({ role: m.role, content: m.content }) as ChatTurn),
   ];
 
@@ -255,6 +264,7 @@ async function runTurn(
   });
 
   if (injectedFacts.length > 0) await markFactsUsed(injectedFacts);
+  if (story?.active) await incrementStoryTurns();
 
   return { emotion: finalEmotion, imagePrompt: parsed.prompt };
 }

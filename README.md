@@ -6,8 +6,8 @@ listen, and can draw pictures on request.
 
 **Status:** Phase 5 started — chat, memory, settings, emotions, voice, image
 generation, structured auto-image requests, and customizable Cloud visuals work
-end-to-end. Story mode and stickers land later. See `docs/plan.md` for the full
-roadmap.
+end-to-end. Story mode is now available; stickers land later. See `docs/plan.md`
+for the full roadmap.
 
 ## Quick start
 
