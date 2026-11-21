@@ -3,9 +3,9 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 ENV ONNXRUNTIME_NODE_INSTALL_CUDA=skip
-RUN npm install --onnxruntime-node-install-cuda=skip
+RUN npm ci
 
 COPY . .
 RUN npm run build

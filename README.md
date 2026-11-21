@@ -11,10 +11,18 @@ See `docs/plan.md`.
 
 ## Quick start
 
+Use Node.js 20.19+ or 22.12+. On Linux x64, skip the optional ONNX
+Runtime CUDA download when installing dependencies; the browser app does not
+use the Node CUDA runtime:
+
 ```bash
-npm install      # install dependencies
+ONNXRUNTIME_NODE_INSTALL_CUDA=skip npm ci
 npm run dev      # start the dev server at http://localhost:5173
 ```
+
+The dependency lockfile overrides `sharp` to a patched release because Kokoro's
+Transformers dependency still requests an older range. Revisit the override when
+Kokoro updates its dependencies, and verify browser voice after changing it.
 
 ## Common commands
 
@@ -68,7 +76,7 @@ See `docs/plan.md` for the phase breakdown and architectural decisions, and
 
 ## First-run setup
 
-1. `npm install && npm run dev`
+1. `ONNXRUNTIME_NODE_INSTALL_CUDA=skip npm ci && npm run dev`
 2. Open http://localhost:5173
 3. Click the gear icon (top right) and fill in:
    - Base URL (e.g. `https://api.openai.com` or `https://router.huggingface.co`)
