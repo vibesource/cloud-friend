@@ -1,4 +1,8 @@
-import type { ImageProvider, ImageProviderFactory } from './types';
+import type {
+  GenerateOptions,
+  ImageProvider,
+  ImageProviderFactory,
+} from './types';
 
 interface HFConfig {
   apiKey: string;
@@ -39,7 +43,8 @@ class HuggingfaceImageProvider implements ImageProvider {
     );
   }
 
-  async generate(prompt: string): Promise<Blob> {
+  async generate(prompt: string, opts?: GenerateOptions): Promise<Blob> {
+    opts?.signal?.throwIfAborted();
     if (!(await this.isAvailable())) {
       throw new Error(
         'No Huggingface token or model set. Open Settings → Image generation.',
@@ -51,6 +56,7 @@ class HuggingfaceImageProvider implements ImageProvider {
     let blob: Blob;
     try {
       const client = await this.getClient();
+      opts?.signal?.throwIfAborted();
       blob = await client.textToImage(
         {
           model: this.config.model,
@@ -60,9 +66,16 @@ class HuggingfaceImageProvider implements ImageProvider {
             height: this.config.height,
           },
         },
-        { outputType: 'blob' },
+        { outputType: 'blob', signal: opts?.signal },
       );
+      opts?.signal?.throwIfAborted();
     } catch (err) {
+      if (
+        opts?.signal?.aborted ||
+        (err instanceof Error && err.name === 'AbortError')
+      ) {
+        throw err;
+      }
       // HF returns a 429 when the model is cold-loading on the free tier.
       // Surface a friendly message; the user can retry after a moment.
       const msg = err instanceof Error ? err.message : String(err);
@@ -102,7 +115,7 @@ type HFInferenceClient = {
       inputs: string;
       parameters?: { width?: number; height?: number };
     },
-    opts?: { outputType?: 'blob' },
+    opts?: { outputType?: 'blob'; signal?: AbortSignal },
   ) => Promise<Blob>;
 };
 

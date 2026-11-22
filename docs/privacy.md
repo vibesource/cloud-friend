@@ -49,7 +49,10 @@ data") also removes everything.
 - A hardcoded kid-safe system prompt is always layered under the editable
   personality.
 - A keyword backstop filter (on by default) blocks unsafe words in both user
-  input and Cloud's output.
+  input and Cloud's output. During streaming, possible partial matches are held
+  back; a match stops the reply and replaces it with a gentle response. Text
+  already shown before a match may have been read or spoken. Matching is by
+  substring and can also block innocent words.
 - Image prompts are wrapped with kid-safe style tags before being sent.
 - The app does not collect analytics, telemetry, or crash reports.
 

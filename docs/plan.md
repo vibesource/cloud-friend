@@ -92,6 +92,7 @@ docs/                  # design docs (this file, decisions, ADRs)
 ### Data model (Dexie tables)
 
 - `messages` — `{ id, role, content, emotion?, imageId?, ts }`
+  with optional `memoryExtracted` progress on messages processed for memory
 - `facts` — `{ id, kind: 'preference'|'event'|'person'|'interest', text, confidence, ts, lastUsed }`
 - `images` — `{ id, prompt, blob, ts }`
 - `settings` — singleton row holding all provider config + personality + context-window size
@@ -128,6 +129,9 @@ the chat loop.
 - A "context window" (token budget, parent-configurable) holds the recent message tail.
 - When messages scroll out of that window, the **utility model** is prompted to extract
   durable facts ("her cat is named Mochi", "she's nervous about Friday's test").
+  Extraction runs after the chat reply in bounded batches. Successful messages are
+  marked atomically with their facts; failures retry on a later turn. Existing
+  history without a marker is processed once as it falls outside the window.
 - Facts live in `facts` table with kind + confidence. Low-confidence facts decay.
 - On each turn, top-N facts by relevance/recency are injected into a `system` block,
   above the recent message tail.

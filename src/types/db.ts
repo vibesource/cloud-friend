@@ -16,6 +16,8 @@ export interface Message {
   emotion?: Emotion;
   imageId?: string;
   ts: number;
+  /** Set only after this message has been successfully processed for memory. */
+  memoryExtracted?: boolean;
 }
 
 export type FactKind = 'preference' | 'event' | 'person' | 'interest';

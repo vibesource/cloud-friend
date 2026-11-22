@@ -158,6 +158,7 @@ async function* parseSSEStream(
       }
     }
   } finally {
+    await reader.cancel().catch(() => {});
     reader.releaseLock();
   }
 }

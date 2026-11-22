@@ -13,6 +13,8 @@ interface Props {
   onStopSpeaking?: () => void;
   /** Message id currently generating an image (shows placeholder). */
   imageGeneratingForMessageId?: string | null;
+  imageCancelledForMessageId?: string | null;
+  onCancelImage?: () => void;
   onDismissError?: () => void;
 }
 
@@ -24,19 +26,45 @@ export default function MessageList({
   onSpeak,
   onStopSpeaking,
   imageGeneratingForMessageId,
+  imageCancelledForMessageId,
+  onCancelImage,
   onDismissError,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const followingRef = useRef(true);
+
+  function trackScroll() {
+    const el = scrollRef.current;
+    if (!el) return;
+    followingRef.current =
+      el.scrollHeight - el.scrollTop - el.clientHeight <= 64;
+  }
+
+  function followImage() {
+    const el = scrollRef.current;
+    if (el && followingRef.current) {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'auto' });
+    }
+  }
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el) return;
-    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    if (!el || !followingRef.current) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: 'auto' });
   }, [messages, error]);
+
+  useEffect(() => {
+    if (imageGeneratingForMessageId) {
+      const el = scrollRef.current;
+      if (el && followingRef.current) {
+        el.scrollTo({ top: el.scrollHeight, behavior: 'auto' });
+      }
+    }
+  }, [imageGeneratingForMessageId]);
 
   if (messages.length === 0 && !error) {
     return (
-      <div className={styles.scroll} ref={scrollRef}>
+      <div className={styles.scroll} ref={scrollRef} onScroll={trackScroll}>
         <div className={styles.empty}>
           <p>
             Say hi to Cloud! She&apos;s a cat riding a cloud and she&apos;d love
@@ -48,7 +76,7 @@ export default function MessageList({
   }
 
   return (
-    <div className={styles.scroll} ref={scrollRef}>
+    <div className={styles.scroll} ref={scrollRef} onScroll={trackScroll}>
       {messages.map((m, i) => {
         const isLast = i === messages.length - 1;
         const showCaret = streaming && m.role === 'assistant' && isLast;
@@ -86,6 +114,9 @@ export default function MessageList({
                 <MessageImage
                   imageId={m.imageId}
                   generating={imageGeneratingForMessageId === m.id}
+                  cancelled={imageCancelledForMessageId === m.id}
+                  onCancel={onCancelImage}
+                  onLoad={followImage}
                 />
               ) : null}
             </div>

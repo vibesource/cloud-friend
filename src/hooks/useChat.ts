@@ -2,17 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/storage/db';
 import { useMessages, useSettings } from '@/lib/storage/hooks';
 import { selectContextWindow } from '@/lib/memory/context';
-import { extractFactsFromMessages } from '@/lib/memory/extract';
-import { markFactsUsed, upsertFacts } from '@/lib/memory/store';
+import { scheduleMemoryExtraction } from '@/lib/memory/queue';
+import { markFactsUsed } from '@/lib/memory/store';
 import { rankFacts } from '@/lib/memory/rank';
 import { markRecallUsed, maybeChooseRecallCue } from '@/lib/memory/recall';
-import {
-  buildSystemPrompt,
-  isInputSafe,
-  isOutputSafe,
-} from '@/lib/safety/prompt';
+import { buildSystemPrompt, isInputSafe } from '@/lib/safety/prompt';
+import { consumeSafeStream } from '@/lib/safety/stream';
 import { inferEmotionFromReply, randomBoopEmotion } from '@/lib/cloud/emotion';
-import { parseImageMarker, stripImageMarkerDraft } from '@/lib/image/marker';
 import { streamChat, type ChatTurn } from '@/lib/llm/stream';
 import { buildStoryPrompt } from '@/lib/story/prompt';
 import { incrementStoryTurns, type StoryState } from '@/lib/story/state';
@@ -136,13 +132,13 @@ export function useChat(story?: StoryState): UseChatResult {
 
       const controller = new AbortController();
       abortRef.current = controller;
-    setError(null);
-    setStreaming(true);
-    setCloudEmotion('thinking');
-    if (idleTimerRef.current !== null) {
-      window.clearTimeout(idleTimerRef.current);
-      idleTimerRef.current = null;
-    }
+      setError(null);
+      setStreaming(true);
+      setCloudEmotion('thinking');
+      if (idleTimerRef.current !== null) {
+        window.clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
 
       const now = Date.now();
       const userMsg: Message = {
@@ -170,8 +166,8 @@ export function useChat(story?: StoryState): UseChatResult {
           userMsg,
           cloudMsg,
           signal: controller.signal,
-          onPartial: (partial) => {
-            void db.messages.update(cloudMsg.id, { content: partial });
+          onPartial: async (partial) => {
+            await db.messages.update(cloudMsg.id, { content: partial });
             setCloudEmotion('talking');
           },
         });
@@ -226,7 +222,7 @@ interface RunTurnArgs {
   userMsg: Message;
   cloudMsg: Message;
   signal: AbortSignal;
-  onPartial: (partial: string) => void;
+  onPartial: (partial: string) => Promise<void>;
 }
 
 async function runTurn(
@@ -241,14 +237,6 @@ async function runTurn(
     all,
     settings.memory.contextTokens,
   );
-
-  if (evicted.length > 0) {
-    const extracted = await extractFactsFromMessages(
-      evicted,
-      settings.llm,
-    ).catch(() => []);
-    if (extracted.length > 0) await upsertFacts(extracted);
-  }
 
   const allFacts = await db.facts.toArray();
   const ranked = rankFacts(allFacts);
@@ -267,7 +255,6 @@ async function runTurn(
     ...included.map((m) => ({ role: m.role, content: m.content }) as ChatTurn),
   ];
 
-  let accumulated = '';
   const stream = await streamChat({
     config: settings.llm,
     messages: turns,
@@ -275,23 +262,12 @@ async function runTurn(
     temperature: 0.7,
   });
 
-  for await (const chunk of stream) {
-    accumulated += chunk;
-    onPartial(stripImageMarkerDraft(accumulated));
-  }
-
-  const parsed = parseImageMarker(accumulated);
-  const visibleContent =
-    parsed.content ||
-    (parsed.prompt ? "I'll draw that for you! ✨" : accumulated);
-
-  // If the reply tripped the safety backstop, Cloud looks apologetic
-  // regardless of the inferred emotion — it signals something's off.
-  const finalEmotion: Emotion = isOutputSafe(visibleContent, settings)
-    ? inferEmotionFromReply(visibleContent)
-    : 'sad';
+  const result = await consumeSafeStream(stream, settings, onPartial);
+  const finalEmotion: Emotion = result.blocked
+    ? 'sad'
+    : inferEmotionFromReply(result.content);
   await db.messages.update(cloudMsg.id, {
-    content: visibleContent,
+    content: result.content,
     emotion: finalEmotion,
   });
 
@@ -299,5 +275,8 @@ async function runTurn(
   if (recallCue) await markRecallUsed();
   if (story?.active) await incrementStoryTurns();
 
-  return { emotion: finalEmotion, imagePrompt: parsed.prompt };
+  // Extraction starts after the reply so it cannot hold up the current chat.
+  void scheduleMemoryExtraction(evicted, settings.llm);
+
+  return { emotion: finalEmotion, imagePrompt: result.imagePrompt };
 }

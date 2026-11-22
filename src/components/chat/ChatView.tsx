@@ -25,6 +25,8 @@ interface Props {
   onListen?: () => Promise<string>;
   onStopListening?: () => void;
   imageGeneratingForMessageId?: string | null;
+  imageCancelledForMessageId?: string | null;
+  onCancelImage?: () => void;
   onGenerateImage?: (prompt: string) => void;
   cloud: CloudCustomization;
   storyActive?: boolean;
@@ -51,6 +53,8 @@ export default function ChatView({
   onListen,
   onStopListening,
   imageGeneratingForMessageId,
+  imageCancelledForMessageId,
+  onCancelImage,
   onGenerateImage,
   cloud,
   storyActive,
@@ -152,6 +156,8 @@ export default function ChatView({
           onSpeak={onSpeak}
           onStopSpeaking={onStopSpeaking}
           imageGeneratingForMessageId={imageGeneratingForMessageId}
+          imageCancelledForMessageId={imageCancelledForMessageId}
+          onCancelImage={onCancelImage}
           onDismissError={onClearError}
         />
         <Composer

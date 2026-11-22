@@ -45,6 +45,21 @@
   animation: spin 0.9s linear infinite;
 }
 
+.cancelBtn {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  background: white;
+  color: var(--cloud-fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.cancelled {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

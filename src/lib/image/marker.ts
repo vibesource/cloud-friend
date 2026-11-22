@@ -37,7 +37,17 @@ export function parseImageMarker(text: string): ImageMarkerParseResult {
  */
 export function stripImageMarkerDraft(text: string): string {
   const markerStart = text.search(/\{\{IMG:/i);
-  if (markerStart < 0) return text;
+  if (markerStart < 0) {
+    // Hold an incomplete marker prefix until it is clear whether it is syntax.
+    const marker = '{{img:';
+    const lower = text.toLowerCase();
+    for (let length = marker.length - 1; length > 0; length--) {
+      if (lower.endsWith(marker.slice(0, length))) {
+        return text.slice(0, -length);
+      }
+    }
+    return text;
+  }
   return text
     .slice(0, markerStart)
     .replace(/\n{3,}/g, '\n\n')
