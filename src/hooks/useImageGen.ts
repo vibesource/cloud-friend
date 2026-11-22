@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { db } from '@/lib/storage/db';
 import { applyConfig, getImageProvider } from '@/lib/providers/image/registry';
 import { wrapImagePrompt } from '@/lib/safety/image';
 import { awardSticker } from '@/lib/stickers/store';
 import { friendlyErrorMessage } from '@/lib/errors';
-import { storeImage } from '@/hooks/useImageUrl';
+import { storeImageForMessage } from '@/hooks/useImageUrl';
 import type { Settings } from '@/types/db';
 
 interface UseImageGenResult {
   /** Message id currently generating an image, if any. */
   generatingForMessageId: string | null;
+  cancelledForMessageId: string | null;
   error: string | null;
   /** Generate an image and attach it to the given assistant message. */
   generateForMessage(messageId: string, rawPrompt: string): Promise<void>;
@@ -22,7 +22,13 @@ export function useImageGen(settings: Settings | undefined): UseImageGenResult {
     string | null
   >(null);
   const [error, setError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
+  const [cancelledForMessageId, setCancelledForMessageId] = useState<
+    string | null
+  >(null);
+  const activeRef = useRef<{
+    controller: AbortController;
+    messageId: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!settings) return;
@@ -34,8 +40,11 @@ export function useImageGen(settings: Settings | undefined): UseImageGenResult {
   }, [settings]);
 
   const cancel = useCallback(() => {
-    abortRef.current?.abort();
-    abortRef.current = null;
+    const active = activeRef.current;
+    if (!active) return;
+    active.controller.abort();
+    activeRef.current = null;
+    setCancelledForMessageId(active.messageId);
     setGeneratingForMessageId(null);
   }, []);
 
@@ -44,6 +53,12 @@ export function useImageGen(settings: Settings | undefined): UseImageGenResult {
   const generateForMessage = useCallback(
     async (messageId: string, rawPrompt: string) => {
       if (!settings) return;
+      if (activeRef.current) {
+        setError(
+          'Cloud is already drawing. Please wait or stop that drawing first.',
+        );
+        return;
+      }
 
       // Reject silently if the wrapped prompt is empty or unsafe.
       const wrapped = wrapImagePrompt(rawPrompt, settings);
@@ -61,43 +76,59 @@ export function useImageGen(settings: Settings | undefined): UseImageGenResult {
       const provider = getImageProvider(deps);
       applyConfig(provider, deps);
 
-      if (!(await provider.isAvailable())) {
-        setError(
-          'Add a Huggingface token in Settings → Image generation first.',
-        );
-        return;
-      }
-
       const controller = new AbortController();
-      abortRef.current = controller;
+      const active = { controller, messageId };
+      activeRef.current = active;
       setError(null);
+      setCancelledForMessageId(null);
       setGeneratingForMessageId(messageId);
 
       try {
+        if (!(await provider.isAvailable())) {
+          if (!controller.signal.aborted) {
+            setError(
+              'Add a Huggingface token in Settings → Image generation first.',
+            );
+          }
+          return;
+        }
+        controller.signal.throwIfAborted();
         const blob = await provider.generate(wrapped.prompt, {
           signal: controller.signal,
         });
-        const imageId = await storeImage(rawPrompt, blob);
+        controller.signal.throwIfAborted();
+        await storeImageForMessage(
+          rawPrompt,
+          blob,
+          messageId,
+          controller.signal,
+        );
+        controller.signal.throwIfAborted();
         void awardSticker('first-image');
-        // Attach to the assistant message that triggered the request.
-        await db.messages.update(messageId, { imageId });
       } catch (err) {
-        if (err instanceof Error && err.name === 'AbortError') return;
+        if (
+          controller.signal.aborted ||
+          (err instanceof Error && err.name === 'AbortError')
+        )
+          return;
         setError(friendlyErrorMessage(err));
       } finally {
-        setGeneratingForMessageId(null);
-        abortRef.current = null;
+        if (activeRef.current === active) {
+          setGeneratingForMessageId(null);
+          activeRef.current = null;
+        }
       }
     },
     [settings],
   );
 
   useEffect(() => {
-    return () => abortRef.current?.abort();
+    return () => activeRef.current?.controller.abort();
   }, []);
 
   return {
     generatingForMessageId,
+    cancelledForMessageId,
     error,
     generateForMessage,
     cancel,

@@ -41,18 +41,27 @@ export function useImageUrl(imageId: string | undefined): string | null {
   return url;
 }
 
-/** Save a generated image and return its id. */
-export async function storeImage(prompt: string, blob: Blob): Promise<string> {
+/** Atomically save and attach an image, unless the drawing was cancelled. */
+export async function storeImageForMessage(
+  prompt: string,
+  blob: Blob,
+  messageId: string,
+  signal: AbortSignal,
+): Promise<void> {
   const id = makeId();
-  await db.images.put({
-    id,
-    prompt,
-    blob,
-    ts: Date.now(),
+  await db.transaction('rw', db.images, db.messages, async () => {
+    signal.throwIfAborted();
+    const message = await db.messages.get(messageId);
+    if (!message)
+      throw new DOMException('Message no longer exists', 'AbortError');
+    signal.throwIfAborted();
+    await db.images.put({ id, prompt, blob, ts: Date.now() });
+    signal.throwIfAborted();
+    await db.messages.update(messageId, { imageId: id });
+    signal.throwIfAborted();
   });
   // Pre-seed the cache so useImageUrl resolves synchronously on first render.
   urlCache.set(id, URL.createObjectURL(blob));
-  return id;
 }
 
 function makeId(): string {

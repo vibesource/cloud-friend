@@ -119,6 +119,8 @@ export default function AppShell() {
           onListen={voice.listenOnce}
           onStopListening={voice.stopListening}
           imageGeneratingForMessageId={imageGen.generatingForMessageId}
+          imageCancelledForMessageId={imageGen.cancelledForMessageId}
+          onCancelImage={imageGen.cancel}
           onGenerateImage={(prompt) => void handleGenerateImage(prompt)}
           cloud={chat.settings?.cloud ?? DEFAULT_SETTINGS.cloud}
           storyActive={story.state.active}

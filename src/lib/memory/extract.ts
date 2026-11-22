@@ -100,21 +100,30 @@ export async function extractFactsFromMessages(
 
 function parseExtractionResponse(raw: string): ExtractionResult {
   const jsonText = extractJson(raw);
-  if (!jsonText) return { facts: [] };
+  if (!jsonText) throw new Error('Memory extraction did not return JSON.');
   try {
     const obj = JSON.parse(jsonText) as Partial<ExtractionResult>;
-    const list = Array.isArray(obj.facts) ? obj.facts : [];
+    if (!obj || !Array.isArray(obj.facts)) {
+      throw new Error('Memory extraction did not return a facts array.');
+    }
+    const list = obj.facts;
     const allowed: FactKind[] = ['preference', 'event', 'person', 'interest'];
+    if (
+      list.some(
+        (f) =>
+          !f ||
+          typeof f.text !== 'string' ||
+          typeof f.kind !== 'string' ||
+          !allowed.includes(f.kind),
+      )
+    ) {
+      throw new Error('Memory extraction returned an invalid fact.');
+    }
     return {
-      facts: list
-        .filter(
-          (f) => f && typeof f.text === 'string' && typeof f.kind === 'string',
-        )
-        .filter((f) => allowed.includes((f as { kind: FactKind }).kind))
-        .map((f) => ({ kind: (f as { kind: FactKind }).kind, text: f.text })),
+      facts: list.map((f) => ({ kind: f.kind, text: f.text })),
     };
   } catch {
-    return { facts: [] };
+    throw new Error('Memory extraction returned invalid JSON or facts.');
   }
 }
 

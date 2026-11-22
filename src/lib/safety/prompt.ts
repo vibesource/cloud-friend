@@ -51,7 +51,10 @@ export function effectiveBlocklist(settings: Settings): string[] {
   const custom = settings.safety.customBlocklist ?? [];
   return settings.safety.keywordFilterEnabled
     ? Array.from(
-        new Set([...DEFAULT_BLOCKLIST, ...custom.map((s) => s.toLowerCase())]),
+        new Set([
+          ...DEFAULT_BLOCKLIST,
+          ...custom.map((s) => s.trim().toLowerCase()).filter(Boolean),
+        ]),
       )
     : [];
 }
