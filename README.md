@@ -9,6 +9,21 @@ memory, emotions, voice, image generation, story mode, stickers, customization,
 accessibility, friendly errors, data export, unit tests, and a privacy doc.
 See `docs/plan.md`.
 
+## Meet Cloud
+
+Cloud can chat, draw pictures, and make up stories together with your child.
+
+|                                                           Chat and drawings                                                            |                                                           Story mode                                                            |
+| :------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------: |
+| <img src="docs/images/cloud-chat.png" alt="Cloud chatting about a floating candy kingdom and showing a generated picture" width="380"> | <img src="docs/images/cloud-story-mode.png" alt="Cloud and a child making up a story with generated illustrations" width="380"> |
+
+Cloud's expressions change as she chats. These stills come from the app's avatar;
+in the app, Cloud and her reactions are animated.
+
+|                                        Happy                                        |                                       Sad                                        |                                  Surprised                                   |                                       Blushing                                       |                                  Thinking                                   |
+| :---------------------------------------------------------------------------------: | :------------------------------------------------------------------------------: | :--------------------------------------------------------------------------: | :----------------------------------------------------------------------------------: | :-------------------------------------------------------------------------: |
+| <img src="docs/images/cloud-happy.svg" alt="Happy Cloud with sparkles" width="120"> | <img src="docs/images/cloud-sad.svg" alt="Sad Cloud with raindrops" width="120"> | <img src="docs/images/cloud-surprise.svg" alt="Surprised Cloud" width="120"> | <img src="docs/images/cloud-blush.svg" alt="Blushing Cloud with hearts" width="120"> | <img src="docs/images/cloud-thinking.svg" alt="Cloud thinking" width="120"> |
+
 ## Quick start
 
 Use Node.js 20.19+ or 22.12+. On Linux x64, skip the optional ONNX
